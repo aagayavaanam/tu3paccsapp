@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n="page_title">PACS கடன் மேலாண்மை மற்றும் வட்டி கணக்கீடு</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0d9488">
+    <link rel="apple-touch-icon" href="icon-512.png">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&family=Noto+Sans+Tamil:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- SheetJS Library -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body class="light-mode">
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header" id="sidebar-header-btn" style="cursor: pointer;">
+                <div class="logo-container">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="logo-icon">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                </div>
+                <div class="pacs-info">
+                    <h1 class="pacs-title" data-i18n="pacs_name">PACS கூட்டுறவு சங்கம்</h1>
+                    <span class="pacs-subtitle" data-i18n="pacs_subtitle">கடன் மேலாண்மைத் தளம்</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <ul class="nav-list">
+                    <!-- Home Page Link -->
+                    <li class="nav-item active">
+                        <a href="#home" class="nav-link active" id="link-home">
+                            <span class="nav-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                                </svg>
+                            </span>
+                            <span class="nav-label" data-i18n="nav_home">முகப்பு</span>
+                        </a>
+                    </li>
+
+                    <!-- Interest Calculation Dropdown -->
+                    <li class="nav-item has-submenu">
+                        <button class="nav-link menu-trigger" id="btn-interest">
+                            <span class="nav-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="12" y1="1" x2="12" y2="23"></line>
+                                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                                </svg>
+                            </span>
+                            <span class="nav-label" data-i18n="nav_interest">வட்டி கணக்கீடு</span>
+                            <span class="submenu-arrow">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="6 9 12 15 18 9"></polyline>
+                                </svg>
+                            </span>
+                        </button>
+                        <ul class="submenu-list">
+                            <li class="submenu-item">
+                                <a href="#crop-loan" class="submenu-link" id="link-crop">
+                                    <span class="dot"></span>
+                                    <span data-i18n="sub_crop">பயிர்க்கடன் வட்டி</span>
+                                </a>
+                            </li>
+                            <li class="submenu-item">
+                                <a href="#jewel-loan" class="submenu-link" id="link-jewel">
+                                    <span class="dot"></span>
+                                    <span data-i18n="sub_jewel">நகைக்கடன் வட்டி</span>
+                                </a>
+                            </li>
+                            <li class="submenu-item">
+                                <a href="#shg-loan" class="submenu-link" id="link-shg">
+                                    <span class="dot"></span>
+                                    <span data-i18n="sub_shg">SHG வட்டி முறை</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <!-- Loan Members Dropdown -->
+                    <li class="nav-item has-submenu">
+                        <button class="nav-link menu-trigger" id="btn-members-menu">
+                            <span class="nav-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="9" cy="7" r="4"></circle>
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                </svg>
+                            </span>
+                            <span class="nav-label" data-i18n="nav_members">கடன் உறுப்பினர்கள்</span>
+                            <span class="submenu-arrow">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="6 9 12 15 18 9"></polyline>
+                                </svg>
+                            </span>
+                        </button>
+                        <ul class="submenu-list">
+                            <li class="submenu-item">
+                                <a href="#members" class="submenu-link" id="link-members">
+                                    <span class="dot"></span>
+                                    <span>உறுப்பினர் பட்டியல்</span>
+                                </a>
+                            </li>
+                            <li class="submenu-item">
+                                <a href="#add-member" class="submenu-link" id="link-add-member">
+                                    <span class="dot"></span>
+                                    <span>உறுப்பினர் சேர்க்கை</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <!-- Print Controller Dropdown -->
+                    <li class="nav-item has-submenu">
+                        <button class="nav-link menu-trigger" id="btn-print-menu">
+                            <span class="nav-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                                    <rect x="6" y="14" width="12" height="8"></rect>
+                                </svg>
+                            </span>
+                            <span class="nav-label" data-i18n="nav_print_controller">விண்ணப்ப அச்சு</span>
+                            <span class="submenu-arrow">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="6 9 12 15 18 9"></polyline>
+                                </svg>
+                            </span>
+                        </button>
+                        <ul class="submenu-list">
+                            <li class="submenu-item">
+                                <a href="#print-kcc" class="submenu-link" id="link-print-kcc">
+                                    <span class="dot"></span>
+                                    <span>கேசிசி விண்ணப்பம்</span>
+                                </a>
+                            </li>
+                            <li class="submenu-item">
+                                <a href="#print-ah" class="submenu-link" id="link-print-ah">
+                                    <span class="dot"></span>
+                                    <span>AH விண்ணப்பம்</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <!-- Google Sheet Sync Settings -->
+                    <li class="nav-item">
+                        <a href="#sheet-sync" class="nav-link" id="link-sheet-sync">
+                            <span class="nav-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                                    <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                                </svg>
+                            </span>
+                            <span class="nav-label" data-i18n="nav_sheet_sync">கூகுள் சீட் இணைப்பு</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- Sidebar Footer Controls -->
+            <div class="sidebar-footer">
+                <!-- Theme Toggle -->
+                <button class="footer-control-btn" id="theme-toggle" title="தீம் மாற்றவும்">
+                    <span class="control-icon sun-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="5"></circle>
+                            <line x1="12" y1="1" x2="12" y2="3"></line>
+                            <line x1="12" y1="21" x2="12" y2="23"></line>
+                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                            <line x1="1" y1="12" x2="3" y2="12"></line>
+                            <line x1="21" y1="12" x2="23" y2="12"></line>
+                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                        </svg>
+                    </span>
+                    <span class="control-icon moon-icon" style="display: none;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                        </svg>
+                    </span>
+                    <span class="footer-control-label" id="theme-text" data-i18n="theme_light">பகல் மோட்</span>
+                </button>
+
+                <!-- Language Toggle -->
+                <button class="footer-control-btn" id="lang-toggle" title="Change Language">
+                    <span class="control-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="2" y1="12" x2="22" y2="12"></line>
+                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                        </svg>
+                    </span>
+                    <span class="footer-control-label" id="lang-label">English</span>
+                </button>
+
+                <!-- Admin Info -->
+                <div class="admin-profile">
+                    <div class="admin-avatar">A</div>
+                    <div class="admin-details">
+                        <p class="admin-name">PACS Admin</p>
+                        <p class="admin-role" data-i18n="admin_role">கடன் அதிகாரி</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Page: Home (Active by Default) -->
+            <section id="page-home" class="content-page active">
+
+                <div class="welcome-container">
+                    <div class="welcome-card card">
+                        <div class="welcome-body card-body">
+                            <span class="welcome-badge">PACS PORTAL</span>
+                            <h1 class="welcome-title">TU3 PACCS</h1>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Page: Crop Loan -->
+            <section id="page-crop-loan" class="content-page">
+                <header class="content-header">
+                    <div>
+                        <h2 class="page-title" data-i18n="crop_title">பயிர்க்கடன் வட்டி கணக்கீடு</h2>
+                        <p class="page-subtitle" data-i18n="crop_subtitle">அசல் மற்றும் அபராத வட்டி விகிதங்களைக் கொண்டு நிகழ்நேர கணக்கீடு</p>
+                    </div>
+                    <div class="current-date-badge">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="calendar-icon">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                        </svg>
+                        <span id="header-today-date">13-07-2026</span>
+                    </div>
+                </header>
+
+                <div class="calculator-grid">
+                    <!-- Inputs Form Card -->
+                    <div class="card form-card">
+                        <div class="card-header">
+                            <h3 data-i18n="input_header">கடன் விவரங்கள் உள்ளீடு</h3>
+                        </div>
+                        <div class="card-body">
+                            <form id="loan-form">
+                                <!-- Principal -->
+                                <div class="form-group">
+                                    <label for="input-principal" class="form-label">
+                                        <span data-i18n="label_principal">அசல் தொகை (₹)</span>
+                                        <span class="required">*</span>
+                                    </label>
+                                    <div class="input-wrapper">
+                                        <span class="input-prefix">₹</span>
+                                        <input type="text" id="input-principal" value="1,00,000" required>
+                                    </div>
+                                </div>
+
+                                <!-- Dates Grid -->
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="input-start-date" class="form-label">
+                                            <span data-i18n="label_start_date">ஆரம்ப தேதி</span>
+                                            <span class="required">*</span>
+                                        </label>
+                                        <input type="date" id="input-start-date" value="2025-06-01" required>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="input-end-date" class="form-label">
+                                            <span data-i18n="label_end_date">முடிவு தேதி</span>
+                                            <span class="required">*</span>
+                                        </label>
+                                        <input type="date" id="input-end-date" value="2026-07-05" required>
+                                    </div>
+                                </div>
+
+                                <!-- Rates Grid -->
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="input-interest-rate" class="form-label">
+                                            <span data-i18n="label_interest_rate">வட்டி விகிதம் (%)</span>
+                                            <span class="required">*</span>
+                                        </label>
+                                        <div class="input-wrapper">
+                                            <input type="number" id="input-interest-rate" min="0" max="100" step="0.05" value="7.0" required>
+                                            <span class="input-suffix">%</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="input-penal-rate" class="form-label">
+                                            <span data-i18n="label_penal_rate">அபராத வட்டி விகிதம் (%)</span>
+                                            <span class="required">*</span>
+                                        </label>
+                                        <div class="input-wrapper">
+                                            <input type="number" id="input-penal-rate" min="0" max="100" step="0.05" value="1.0" required>
+                                            <span class="input-suffix">%</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Normal Loan Days configuration (Collapsible Advanced Settings) -->
+                                <div class="advanced-settings">
+                                    <details>
+                                        <summary data-i18n="advanced_title">மேம்பட்ட அமைப்புகள் (தவணை காலம்)</summary>
+                                        <div class="form-group margin-top-sm">
+                                            <label for="input-normal-period" class="form-label">
+                                                <span data-i18n="label_normal_period">சாதாரண தவணை காலம் (நாட்கள்)</span>
+                                            </label>
+                                            <input type="number" id="input-normal-period" min="1" max="1000" value="365">
+                                        </div>
+                                    </details>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Results Dashboard Area -->
+                    <div class="results-container">
+                        <!-- Primary Stats Cards -->
+                        <div class="stats-grid">
+                            <!-- Total Days -->
+                            <div class="stat-card">
+                                <span class="stat-icon icon-days">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                                    </svg>
+                                </span>
+                                <div class="stat-info">
+                                    <p class="stat-label" data-i18n="card_total_days">மொத்த நாட்கள்</p>
+                                    <h3 class="stat-value" id="val-total-days">399</h3>
+                                </div>
+                            </div>
+
+                            <!-- Penal Days -->
+                            <div class="stat-card alert-stat-card">
+                                <span class="stat-icon icon-penal-days">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                                        <line x1="12" y1="9" x2="12" y2="13"></line>
+                                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                    </svg>
+                                </span>
+                                <div class="stat-info">
+                                    <p class="stat-label" data-i18n="card_penal_days">அபராத நாட்கள்</p>
+                                    <h3 class="stat-value text-danger" id="val-penal-days">34</h3>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Calculations Details Card -->
+                        <div class="card results-card">
+                            <div class="card-header">
+                                <h3 data-i18n="results_header">கணக்கீட்டு விவரங்கள்</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="breakdown-list">
+                                    <div class="breakdown-item">
+                                        <span class="breakdown-label" data-i18n="row_normal_interest">சாதாரண வட்டி:</span>
+                                        <span class="breakdown-value" id="val-normal-interest">₹7,652.05</span>
+                                    </div>
+                                    <div class="breakdown-item">
+                                        <span class="breakdown-label text-danger" data-i18n="row_penal_interest">அபராத வட்டி:</span>
+                                        <span class="breakdown-value text-danger" id="val-penal-interest">₹186.30</span>
+                                    </div>
+                                    <div class="breakdown-divider"></div>
+                                    <div class="breakdown-item highlight-item-green">
+                                        <span class="breakdown-label font-bold" data-i18n="row_total_interest">மொத்த வட்டி தொகை:</span>
+                                        <span class="breakdown-value font-bold text-success" id="val-total-interest">₹7,838.35</span>
+                                    </div>
+                                    <div class="breakdown-item highlight-item-blue">
+                                        <span class="breakdown-label font-bold" data-i18n="row_total_payable">மொத்த தொகை (அசல் + வட்டி):</span>
+                                        <span class="breakdown-value font-bold text-primary" id="val-total-payable">₹1,07,838.35</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Page: Jewel Loan -->
+            <section id="page-jewel-loan" class="content-page">
+                <header class="content-header">
+                    <div>
+                        <h2 class="page-title" data-i18n="jl_title">நகைக்கடன் வட்டி கணக்கீடு</h2>
+                        <p class="page-subtitle" data-i18n="jl_subtitle">நகைக்கடன் மற்றும் புதுப்பித்தல் விவரங்களைக் கொண்டு நிகழ்நேர கணக்கீடு</p>
+                    </div>
+                    <div class="current-date-badge">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="calendar-icon">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                        </svg>
+                        <span id="jl-header-today-date">13-07-2026</span>
+                    </div>
+                </header>
+
+                <div class="calculator-grid">
+                    <!-- Inputs Form Card -->
+                    <div class="card form-card">
+                        <div class="card-header">
+                            <h3 data-i18n="input_header">கடன் விவரங்கள் உள்ளீடு</h3>
+                        </div>
+                        <div class="card-body">
+                            <form id="jl-loan-form">
+                                <!-- Principal -->
+                                <div class="form-group">
+                                    <label for="input-jl-principal" class="form-label">
+                                        <span data-i18n="label_principal">அசல் தொகை (₹)</span>
+                                        <span class="required">*</span>
+                                    </label>
+                                    <div class="input-wrapper">
+                                        <span class="input-prefix">₹</span>
+                                        <input type="text" id="input-jl-principal" value="33,000" required>
+                                    </div>
+                                </div>
+
+                                <!-- Dates Grid -->
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="input-jl-start-date" class="form-label">
+                                            <span data-i18n="label_start_date">ஆரம்ப தேதி</span>
+                                            <span class="required">*</span>
+                                        </label>
+                                        <input type="date" id="input-jl-start-date" value="2025-02-05" required>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="input-jl-end-date" class="form-label">
+                                            <span data-i18n="label_end_date">முடிவு தேதி</span>
+                                            <span class="required">*</span>
+                                        </label>
+                                        <input type="date" id="input-jl-end-date" value="2026-02-04" required>
+                                    </div>
+                                </div>
+
+                                <!-- Rates Grid -->
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="input-jl-interest-rate" class="form-label">
+                                            <span data-i18n="label_interest_rate">வட்டி விகிதம் (%)</span>
+                                            <span class="required">*</span>
+                                        </label>
+                                        <div class="input-wrapper">
+                                            <input type="number" id="input-jl-interest-rate" min="0" max="100" step="0.05" value="12.5" required>
+                                            <span class="input-suffix">%</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="input-jl-penal-rate" class="form-label">
+                                            <span data-i18n="label_penal_rate">அபராத வட்டி விகிதம் (%)</span>
+                                            <span class="required">*</span>
+                                        </label>
+                                        <div class="input-wrapper">
+                                            <input type="number" id="input-jl-penal-rate" min="0" max="100" step="0.05" value="3.0" required>
+                                            <span class="input-suffix">%</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Renewal Settings Section -->
+                                <div class="form-section-divider"></div>
+                                <h4 class="form-section-title" data-i18n="jl_renewal_header">கடன் புதுப்பித்தல் விவரங்கள்</h4>
+
+                                <!-- New Loan Amount -->
+                                <div class="form-group">
+                                    <label for="input-jl-new-loan" class="form-label">
+                                        <span data-i18n="label_jl_new_loan">புதிய கடன் அசல் (₹)</span>
+                                    </label>
+                                    <div class="input-wrapper">
+                                        <span class="input-prefix">₹</span>
+                                        <input type="text" id="input-jl-new-loan" value="0">
+                                    </div>
+                                </div>
+
+                                <!-- App Fees & Deduction -->
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="input-jl-app-fees" class="form-label">
+                                            <span data-i18n="label_jl_app_fees">நகை மதிப்பினர் கூலி (₹)</span>
+                                        </label>
+                                        <div class="input-wrapper">
+                                            <span class="input-prefix">₹</span>
+                                            <input type="text" id="input-jl-app-fees" value="0">
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="input-jl-if-paying" class="form-label">
+                                            <span data-i18n="label_jl_if_paying">தற்போது செலுத்தும் தொகை (₹)</span>
+                                        </label>
+                                        <div class="input-wrapper">
+                                            <span class="input-prefix">₹</span>
+                                            <input type="text" id="input-jl-if-paying" value="0">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Advanced Settings -->
+                                <div class="advanced-settings">
+                                    <details>
+                                        <summary data-i18n="advanced_title">மேம்பட்ட அமைப்புகள் (தவணை காலம்)</summary>
+                                        <div class="form-group margin-top-sm">
+                                            <label for="input-jl-normal-period" class="form-label">
+                                                <span data-i18n="label_normal_period">சாதாரண தவணை காலம் (நாட்கள்)</span>
+                                            </label>
+                                            <input type="number" id="input-jl-normal-period" min="1" max="1000" value="365">
+                                        </div>
+                                    </details>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Results Dashboard Area -->
+                    <div class="results-container">
+                        <!-- Primary Stats Cards -->
+                        <div class="stats-grid">
+                            <!-- Total Days -->
+                            <div class="stat-card">
+                                <span class="stat-icon icon-days">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                                    </svg>
+                                </span>
+                                <div class="stat-info">
+                                    <p class="stat-label" data-i18n="card_total_days">மொத்த நாட்கள்</p>
+                                    <h3 class="stat-value" id="val-jl-total-days">364</h3>
+                                </div>
+                            </div>
+
+                            <!-- Penal Days -->
+                            <div class="stat-card alert-stat-card">
+                                <span class="stat-icon icon-penal-days">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                                        <line x1="12" y1="9" x2="12" y2="13"></line>
+                                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                    </svg>
+                                </span>
+                                <div class="stat-info">
+                                    <p class="stat-label" data-i18n="card_penal_days">அபராத நாட்கள்</p>
+                                    <h3 class="stat-value text-danger" id="val-jl-penal-days">0</h3>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Calculations Details Card -->
+                        <div class="card results-card">
+                            <div class="card-header">
+                                <h3 data-i18n="results_header">கணக்கீட்டு விவரங்கள்</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="breakdown-list">
+                                    <!-- Old Loan Calculations -->
+                                    <div class="breakdown-item">
+                                        <span class="breakdown-label" data-i18n="row_jl_old_principal">பழைய கடன் அசல்:</span>
+                                        <span class="breakdown-value" id="val-jl-old-principal">₹33,000</span>
+                                    </div>
+                                    <div class="breakdown-item">
+                                        <span class="breakdown-label" data-i18n="row_normal_interest">சாதாரண வட்டி:</span>
+                                        <span class="breakdown-value" id="val-jl-normal-interest">₹4,114</span>
+                                    </div>
+                                    <div class="breakdown-item text-danger">
+                                        <span class="breakdown-label text-danger" data-i18n="row_penal_interest">அபராத வட்டி:</span>
+                                        <span class="breakdown-value text-danger" id="val-jl-penal-interest">₹0</span>
+                                    </div>
+                                    
+                                    <div class="breakdown-divider"></div>
+
+                                    <!-- Old Outstanding -->
+                                    <div class="breakdown-item jl-old-total-highlight">
+                                        <span class="breakdown-label font-bold" data-i18n="row_jl_old_total">பழைய கடன் மொத்தம் (அசல் + வட்டி):</span>
+                                        <span class="breakdown-value font-bold" id="val-jl-old-total">₹37,114</span>
+                                    </div>
+
+                                    <!-- Adjustments (Fees & Paid Cash) -->
+                                    <div class="breakdown-item">
+                                        <span class="breakdown-label" data-i18n="row_jl_app_fees">நகை மதிப்பினர் கூலி:</span>
+                                        <span class="breakdown-value" id="val-jl-app-fees-display">₹0</span>
+                                    </div>
+                                    <div class="breakdown-item text-danger">
+                                        <span class="breakdown-label text-danger" data-i18n="row_jl_if_paying">தற்போது செலுத்தும் தொகை:</span>
+                                        <span class="breakdown-value text-danger" id="val-jl-if-paying-display">₹0</span>
+                                    </div>
+                                    
+                                    <div class="breakdown-divider"></div>
+
+                                    <!-- Adjusted Outstanding before New Loan -->
+                                    <div class="breakdown-item highlight-item-green">
+                                        <span class="breakdown-label font-bold" data-i18n="row_total_payable">பட்டுவாடா கணக்கு மொத்தம்:</span>
+                                        <span class="breakdown-value font-bold text-success" id="val-jl-adjusted-total">₹37,114</span>
+                                    </div>
+
+                                    <div class="breakdown-divider"></div>
+
+                                    <!-- Net Settlement Highlight -->
+                                    <div class="breakdown-item highlight-item-blue" id="box-jl-net-settlement">
+                                        <span class="breakdown-label font-bold" data-i18n="row_jl_net_cash">நிகர பணப் பரிவர்த்தனை:</span>
+                                        <div class="text-right">
+                                            <span class="breakdown-value font-bold text-primary" id="val-jl-net-cash">₹4,114</span>
+                                            <div class="badge-status" id="lbl-jl-net-status" data-i18n="status_get_amount">பெற வேண்டியது</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Page: SHG Loan -->
+            <section id="page-shg-loan" class="content-page">
+                <header class="content-header">
+                    <div>
+                        <h2 class="page-title" data-i18n="shg_title">SHG வட்டி கணக்கீடு</h2>
+                        <p class="page-subtitle" data-i18n="shg_subtitle">சுயஉதவிக் குழு கடன்களுக்கான வட்டி மற்றும் அசல் கழிவு கணக்கீடு</p>
+                    </div>
+                    <div class="current-date-badge">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="calendar-icon">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                        </svg>
+                        <span id="shg-header-today-date">13-07-2026</span>
+                    </div>
+                </header>
+
+                <div class="calculator-grid">
+                    <!-- Inputs Form Card -->
+                    <div class="card form-card">
+                        <div class="card-header">
+                            <h3 data-i18n="input_header">கடன் விவரங்கள் உள்ளீடு</h3>
+                        </div>
+                        <div class="card-body">
+                            <form id="shg-loan-form">
+                                <!-- Principal -->
+                                <div class="form-group">
+                                    <label for="input-shg-principal" class="form-label">
+                                        <span data-i18n="label_principal">அசல் தொகை (₹)</span>
+                                        <span class="required">*</span>
+                                    </label>
+                                    <div class="input-wrapper">
+                                        <span class="input-prefix">₹</span>
+                                        <input type="text" id="input-shg-principal" value="10,000" required>
+                                    </div>
+                                </div>
+
+                                <!-- Dates Grid -->
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="input-shg-start-date" class="form-label">
+                                            <span data-i18n="label_start_date">ஆரம்ப தேதி</span>
+                                            <span class="required">*</span>
+                                        </label>
+                                        <input type="date" id="input-shg-start-date" value="2025-06-01" required>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="input-shg-end-date" class="form-label">
+                                            <span data-i18n="label_end_date">முடிவு தேதி</span>
+                                            <span class="required">*</span>
+                                        </label>
+                                        <input type="date" id="input-shg-end-date" value="2026-06-01" required>
+                                    </div>
+                                </div>
+
+                                <!-- Rates Grid -->
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="input-shg-interest-rate" class="form-label">
+                                            <span data-i18n="label_interest_rate">வட்டி விகிதம் (%)</span>
+                                            <span class="required">*</span>
+                                        </label>
+                                        <div class="input-wrapper">
+                                            <input type="number" id="input-shg-interest-rate" min="0" max="100" step="0.05" value="12.0" required>
+                                            <span class="input-suffix">%</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="input-shg-penal-rate" class="form-label">
+                                            <span data-i18n="label_penal_rate">அபராத வட்டி விகிதம் (%)</span>
+                                            <span class="required">*</span>
+                                        </label>
+                                        <div class="input-wrapper">
+                                            <input type="number" id="input-shg-penal-rate" min="0" max="100" step="0.05" value="3.0" required>
+                                            <span class="input-suffix">%</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Payment Section -->
+                                <div class="form-section-divider"></div>
+                                <h4 class="form-section-title" data-i18n="shg_payment_header">திருப்பிச் செலுத்துதல் விவரங்கள்</h4>
+
+                                <!-- Amount Paying Now -->
+                                <div class="form-group">
+                                    <label for="input-shg-amount-paying" class="form-label">
+                                        <span data-i18n="label_shg_amount_paying">தற்போது செலுத்தும் தொகை (₹)</span>
+                                    </label>
+                                    <div class="input-wrapper">
+                                        <span class="input-prefix">₹</span>
+                                        <input type="text" id="input-shg-amount-paying" value="0">
+                                    </div>
+                                </div>
+
+                                <!-- Advanced Settings -->
+                                <div class="advanced-settings">
+                                    <details>
+                                        <summary data-i18n="advanced_title">மேம்பட்ட அமைப்புகள் (தவணை காலம்)</summary>
+                                        <div class="form-group margin-top-sm">
+                                            <label for="input-shg-normal-period" class="form-label">
+                                                <span data-i18n="label_normal_period">சாதாரண தவணை காலம் (நாட்கள்)</span>
+                                            </label>
+                                            <input type="number" id="input-shg-normal-period" min="1" max="1000" value="31">
+                                        </div>
+                                    </details>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Results Dashboard Area -->
+                    <div class="results-container">
+                        <!-- Primary Stats Cards -->
+                        <div class="stats-grid">
+                            <!-- Total Days -->
+                            <div class="stat-card">
+                                <span class="stat-icon icon-days">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                                    </svg>
+                                </span>
+                                <div class="stat-info">
+                                    <p class="stat-label" data-i18n="card_total_days">மொத்த நாட்கள்</p>
+                                    <h3 class="stat-value" id="val-shg-total-days">365</h3>
+                                </div>
+                            </div>
+
+                            <!-- Penal Days -->
+                            <div class="stat-card alert-stat-card">
+                                <span class="stat-icon icon-penal-days">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                                        <line x1="12" y1="9" x2="12" y2="13"></line>
+                                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                    </svg>
+                                </span>
+                                <div class="stat-info">
+                                    <p class="stat-label" data-i18n="card_penal_days">அபராத நாட்கள்</p>
+                                    <h3 class="stat-value text-danger" id="val-shg-penal-days">0</h3>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Calculations Details Card -->
+                        <div class="card results-card">
+                            <div class="card-header">
+                                <h3 data-i18n="results_header">கணக்கீட்டு விவரங்கள்</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="breakdown-list">
+                                    <!-- Interest Calculations -->
+                                    <div class="breakdown-item">
+                                        <span class="breakdown-label" data-i18n="row_normal_interest">சாதாரண வட்டி:</span>
+                                        <span class="breakdown-value" id="val-shg-normal-interest">₹1,200</span>
+                                    </div>
+                                    <div class="breakdown-item text-danger">
+                                        <span class="breakdown-label text-danger" data-i18n="row_penal_interest">அபராத வட்டி:</span>
+                                        <span class="breakdown-value text-danger" id="val-shg-penal-interest">₹0</span>
+                                    </div>
+                                    
+                                    <div class="breakdown-divider"></div>
+
+                                    <!-- Total Interest -->
+                                    <div class="breakdown-item jl-old-total-highlight">
+                                        <span class="breakdown-label font-bold" data-i18n="row_total_interest">மொத்த வட்டி தொகை:</span>
+                                        <span class="breakdown-value font-bold text-success" id="val-shg-total-interest">₹1,200</span>
+                                    </div>
+
+                                    <!-- Payment Adjustments -->
+                                    <div class="breakdown-item">
+                                        <span class="breakdown-label" data-i18n="label_shg_amount_paying">தற்போது செலுத்தும் தொகை:</span>
+                                        <span class="breakdown-value font-bold text-primary" id="val-shg-paying-display">₹2,000</span>
+                                    </div>
+                                    <div class="breakdown-item shg-adj-highlight">
+                                        <span class="breakdown-label font-bold" data-i18n="row_shg_principal_adjusted">அசலில் கழிக்கப்பட்டது:</span>
+                                        <span class="breakdown-value font-bold text-primary" id="val-shg-principal-adjusted">₹800</span>
+                                    </div>
+                                    <div class="breakdown-item shg-adj-highlight">
+                                        <span class="breakdown-label font-bold" data-i18n="row_shg_interest_adjusted">வட்டிக்காக கழிக்கப்பட்டது:</span>
+                                        <span class="breakdown-value font-bold text-success" id="val-shg-interest-adjusted">₹1,200</span>
+                                    </div>
+                                    
+                                    <div class="breakdown-divider"></div>
+
+                                    <!-- Outstanding Balances -->
+                                    <div class="breakdown-item">
+                                        <span class="breakdown-label font-bold" data-i18n="row_shg_rem_principal">மீதி அசல்:</span>
+                                        <span class="breakdown-value font-bold" id="val-shg-rem-principal">₹9,200</span>
+                                    </div>
+
+                                    <div class="breakdown-divider"></div>
+
+                                    <!-- Total Remaining Outstanding Highlight Box -->
+                                    <div class="breakdown-item highlight-item-blue" id="box-shg-net-settlement">
+                                        <span class="breakdown-label font-bold" data-i18n="row_shg_rem_total">செலுத்த வேண்டிய மீதி மொத்தம்:</span>
+                                        <div class="text-right">
+                                            <span class="breakdown-value font-bold text-info" id="val-shg-rem-total">₹9,200</span>
+                                            <div class="badge-status" id="lbl-shg-net-status" data-i18n="status_shg_outstanding">மீதி உள்ளது</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Page: Loan Members -->
+            <section id="page-members" class="content-page">
+                <header class="content-header">
+                    <div>
+                        <h2 class="page-title" data-i18n="members_title">கடன் உறுப்பினர்கள்</h2>
+                        <p class="page-subtitle" data-i18n="members_subtitle">PACS கூட்டுறவு சங்கத்தின் கடன் பெற்ற உறுப்பினர்களின் விவரங்கள்</p>
+                    </div>
+                </header>
+
+
+
+                <!-- Search Interface Card -->
+                <div class="card margin-bottom-md">
+                    <div class="card-header">
+                        <h3 data-i18n="search_header">உறுப்பினர் கணக்குத் தேடல் (Search Member Account)</h3>
+                    </div>
+                    <div class="card-body">
+                        <form id="member-search-form" class="api-connect-form">
+                            <div class="form-group flex-1">
+                                <label for="member-search-input" class="form-label" data-i18n="label_search_input">A Class / SB / ERP எண் / பெயர் உள்ளிடவும்</label>
+                                <input type="text" id="member-search-input" placeholder="உடுத்துக... (e.g. A Class, SB No, ERP, Name)" class="search-input full-width" required>
+                            </div>
+                            <div class="btn-group-connect">
+                                <button type="submit" class="btn btn-primary btn-connect-action" id="btn-do-search">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px; margin-right: 8px; display: inline-block; vertical-align: middle;">
+                                        <circle cx="11" cy="11" r="8"></circle>
+                                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                    </svg>
+                                    <span data-i18n="btn_search">தேடுக (Search)</span>
+                                </button>
+                                <button type="button" class="btn btn-secondary btn-connect-action hidden" id="btn-clear-search" data-i18n="btn_clear">இரத்து செய்க</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Search Results Card Container (Hidden on load) -->
+                <div class="members-container card hidden" id="search-results-card">
+                    <div class="card-header">
+                        <h3 data-i18n="search_results_header">தேடல் முடிவுகள் (Search Results)</h3>
+                    </div>
+                    <div class="card-body" id="search-results-container">
+                        <!-- Populated dynamically as responsive profile cards -->
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- Page: Print KCC Application -->
+            <section id="page-print-kcc" class="content-page">
+                <header class="content-header">
+                    <div>
+                        <h2 class="page-title">கேசிசி விண்ணப்ப அச்சு (KCC Application Print)</h2>
+                        <p class="page-subtitle">கடன்தாரர் மற்றும் பிணையாளர் A Class எண்களைப் பயன்படுத்தி கூகுள் சீட் படிவங்களை நிரப்பி லீகல் பிரிண்ட் எடுத்தல்</p>
+                    </div>
+                </header>
+
+                <!-- Help Info Card -->
+                <div class="card margin-bottom-md print-hide help-banner-card">
+                    <div class="card-body">
+                        <p class="font-sm" style="color: var(--primary); font-weight: 600;">
+                            💡 <strong>குறிப்பு:</strong> கடன்தாரர் எண் கட்டாயம் உள்ளிடப்பட வேண்டும். ஜாமீன்தாரர் எண் விருப்பத்திற்குட்பட்டது.
+                        </p>
+                        <div id="print-kcc-status" class="margin-top-xs text-secondary font-sm font-bold"></div>
+                    </div>
+                </div>
+
+                <!-- Input Search Card -->
+                <div class="card margin-bottom-md">
+                    <div class="card-header">
+                        <h3>உறுப்பினர் விபரங்கள் உள்ளீடு</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="api-connect-form" style="display: flex; gap: 20px; flex-wrap: wrap;">
+                            <div class="form-group" style="flex: 1; min-width: 250px;">
+                                <label for="print-kcc-borrower-input" class="form-label font-bold text-primary">கடன்தாரர் A Class எண் *</label>
+                                <input type="text" id="print-kcc-borrower-input" placeholder="உதாரணமாக: PACS-1024" class="search-input full-width">
+                            </div>
+                            <div class="form-group" style="flex: 1; min-width: 250px;">
+                                <label for="print-kcc-guarantor-input" class="form-label">ஜாமீன்தாரர் A Class எண் (விருப்பம்)</label>
+                                <input type="text" id="print-kcc-guarantor-input" placeholder="உதாரணமாக: PACS-1025 (தேவைப்பட்டால்)" class="search-input full-width">
+                            </div>
+                            <div class="btn-group-connect" style="align-self: flex-end; margin-bottom: 5px;">
+                                <button type="button" class="btn btn-primary" id="btn-print-kcc-lookup" style="height: 42px; padding: 0 25px;">
+                                    தேடுக (Search)
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preview Table Card -->
+                <div class="card margin-bottom-md hidden" id="print-kcc-preview-card">
+                    <div class="card-header">
+                        <h3>விண்ணப்பப் படிவத் தரவு முன்னோட்டம் (Preview Table)</h3>
+                    </div>
+                    <div class="card-body">
+                        <div style="overflow-x: auto;">
+                            <table class="members-table">
+                                <thead>
+                                    <tr>
+                                        <th style="background: var(--bg-hover); color: var(--primary); width: 120px;">பகுதி</th>
+                                        <th>உறுப்பினர் ID</th>
+                                        <th>உறுப்பினர் பெயர்</th>
+                                        <th>SB ERP எண்</th>
+                                        <th>கைபேசி எண்</th>
+                                        <th>ஒப்புதல் தொகை</th>
+                                        <th>முகவரி</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr id="print-kcc-row-borrower">
+                                        <td class="font-bold text-primary">கடன்தாரர்</td>
+                                        <td id="td-kcc-b-id" class="font-bold">-</td>
+                                        <td id="td-kcc-b-name">-</td>
+                                        <td id="td-kcc-b-erp">-</td>
+                                        <td id="td-kcc-b-mobile">-</td>
+                                        <td id="td-kcc-b-amount" class="text-success font-bold">-</td>
+                                        <td id="td-kcc-b-address">-</td>
+                                    </tr>
+                                    <tr id="print-kcc-row-guarantor">
+                                        <td class="font-bold text-secondary">ஜாமீன்தாரர்</td>
+                                        <td id="td-kcc-g-id" class="font-bold">-</td>
+                                        <td id="td-kcc-g-name">-</td>
+                                        <td id="td-kcc-g-erp">-</td>
+                                        <td id="td-kcc-g-mobile">-</td>
+                                        <td id="td-kcc-g-amount" class="text-muted">-</td>
+                                        <td id="td-kcc-g-address">-</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Print Actions -->
+                        <div class="margin-top-lg border-top padding-top-md text-center" style="display: flex; gap: 15px; justify-content: center;">
+                            <button type="button" class="btn btn-primary" id="btn-print-kcc-sheet" style="padding: 12px 24px;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px; margin-right: 8px; display: inline-block; vertical-align: middle;">
+                                    <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                                    <rect x="6" y="14" width="12" height="8"></rect>
+                                </svg>
+                                கேசிசி விண்ணப்பம் அச்சிடு (Print KCC Form)
+                            </button>
+                            <button type="button" class="btn btn-secondary" id="btn-print-kcc-dec-sheet" style="padding: 12px 24px;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px; margin-right: 8px; display: inline-block; vertical-align: middle;">
+                                    <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                                    <rect x="6" y="14" width="12" height="8"></rect>
+                                </svg>
+                                வட்டி ஒப்புதல் கடிதம் அச்சிடு (Print Declaration)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Page: Print AH Application -->
+            <section id="page-print-ah" class="content-page">
+                <header class="content-header">
+                    <div>
+                        <h2 class="page-title">AH விண்ணப்ப அச்சு (AH Application Print)</h2>
+                        <p class="page-subtitle">கடன்தாரர் மற்றும் பிணையாளர் A Class எண்களைப் பயன்படுத்தி கூகுள் சீட் படிவங்களை நிரப்பி லீகல் பிரிண்ட் எடுத்தல்</p>
+                    </div>
+                </header>
+
+                <!-- Help Info Card -->
+                <div class="card margin-bottom-md print-hide help-banner-card">
+                    <div class="card-body">
+                        <p class="font-sm" style="color: var(--primary); font-weight: 600;">
+                            💡 <strong>குறிப்பு:</strong> கடன்தாரர் எண் கட்டாயம் உள்ளிடப்பட வேண்டும். ஜாமீன்தாரர் எண் விருப்பத்திற்குட்பட்டது.
+                        </p>
+                        <div id="print-ah-status" class="margin-top-xs text-secondary font-sm font-bold"></div>
+                    </div>
+                </div>
+
+                <!-- Input Search Card -->
+                <div class="card margin-bottom-md">
+                    <div class="card-header">
+                        <h3>உறுப்பினர் விபரங்கள் உள்ளீடு</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="api-connect-form" style="display: flex; gap: 20px; flex-wrap: wrap;">
+                            <div class="form-group" style="flex: 1; min-width: 250px;">
+                                <label for="print-ah-borrower-input" class="form-label font-bold text-primary">கடன்தாரர் A Class எண் *</label>
+                                <input type="text" id="print-ah-borrower-input" placeholder="உதாரணமாக: PACS-1024" class="search-input full-width">
+                            </div>
+                            <div class="form-group" style="flex: 1; min-width: 250px;">
+                                <label for="print-ah-guarantor-input" class="form-label">ஜாமீன்தாரர் A Class எண் (விருப்பம்)</label>
+                                <input type="text" id="print-ah-guarantor-input" placeholder="உதாரணமாக: PACS-1025 (தேவைப்பட்டால்)" class="search-input full-width">
+                            </div>
+                            <div class="btn-group-connect" style="align-self: flex-end; margin-bottom: 5px;">
+                                <button type="button" class="btn btn-primary" id="btn-print-ah-lookup" style="height: 42px; padding: 0 25px;">
+                                    தேடுக (Search)
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preview Table Card -->
+                <div class="card margin-bottom-md hidden" id="print-ah-preview-card">
+                    <div class="card-header">
+                        <h3>விண்ணப்பப் படிவத் தரவு முன்னோட்டம் (Preview Table)</h3>
+                    </div>
+                    <div class="card-body">
+                        <div style="overflow-x: auto;">
+                            <table class="members-table">
+                                <thead>
+                                    <tr>
+                                        <th style="background: var(--bg-hover); color: var(--primary); width: 120px;">பகுதி</th>
+                                        <th>உறுப்பினர் ID</th>
+                                        <th>உறுப்பினர் பெயர்</th>
+                                        <th>SB ERP எண்</th>
+                                        <th>கைபேசி எண்</th>
+                                        <th>ஒப்புதல் தொகை</th>
+                                        <th>முகவரி</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr id="print-ah-row-borrower">
+                                        <td class="font-bold text-primary">கடன்தாரர்</td>
+                                        <td id="td-ah-b-id" class="font-bold">-</td>
+                                        <td id="td-ah-b-name">-</td>
+                                        <td id="td-ah-b-erp">-</td>
+                                        <td id="td-ah-b-mobile">-</td>
+                                        <td id="td-ah-b-amount" class="text-success font-bold">-</td>
+                                        <td id="td-ah-b-address">-</td>
+                                    </tr>
+                                    <tr id="print-ah-row-guarantor">
+                                        <td class="font-bold text-secondary">ஜாமீன்தாரர்</td>
+                                        <td id="td-ah-g-id" class="font-bold">-</td>
+                                        <td id="td-ah-g-name">-</td>
+                                        <td id="td-ah-g-erp">-</td>
+                                        <td id="td-ah-g-mobile">-</td>
+                                        <td id="td-ah-g-amount" class="text-muted">-</td>
+                                        <td id="td-ah-g-address">-</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Print Actions -->
+                        <div class="margin-top-lg border-top padding-top-md text-center" style="display: flex; gap: 15px; justify-content: center;">
+                            <button type="button" class="btn btn-primary" id="btn-print-ah-sheet" style="padding: 12px 24px;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px; margin-right: 8px; display: inline-block; vertical-align: middle;">
+                                    <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                                    <rect x="6" y="14" width="12" height="8"></rect>
+                                </svg>
+                                கால்நடை விண்ணப்பம் அச்சிடு (Print AH Form)
+                            </button>
+                            <button type="button" class="btn btn-secondary" id="btn-print-ah-dec-sheet" style="padding: 12px 24px;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px; margin-right: 8px; display: inline-block; vertical-align: middle;">
+                                    <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                                    <rect x="6" y="14" width="12" height="8"></rect>
+                                </svg>
+                                வட்டி ஒப்புதல் கடிதம் அச்சிடு (Print Declaration)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Page: Disbursement (Placeholder Page) -->
+            <section id="page-disbursement" class="content-page">
+                <header class="content-header">
+                    <div>
+                        <h2 class="page-title" data-i18n="disburse_title">பட்டுவாடா தயார் செய்தல்</h2>
+                        <p class="page-subtitle" data-i18n="disburse_subtitle">ஒப்புதல் அளிக்கப்பட்ட கடன்களுக்கான பட்டுவாடா திட்டங்கள்</p>
+                    </div>
+                </header>
+
+                <div class="placeholder-container">
+                    <div class="placeholder-visual">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="placeholder-icon">
+                            <rect x="2" y="4" width="20" height="16" rx="2" ry="2"></rect>
+                            <line x1="12" y1="10" x2="12" y2="16"></line>
+                            <line x1="8" y1="12" x2="16" y2="12"></line>
+                        </svg>
+                    </div>
+                    <h3 class="placeholder-title" data-i18n="disburse_placeholder_title">பட்டுவாடா மேலாண்மைத் தளம்</h3>
+                    <p class="placeholder-desc" data-i18n="disburse_placeholder_desc">இந்த தொகுதி எதிர்கால மேம்பாட்டிற்காக ஒதுக்கப்பட்டுள்ளது. இங்கு விவசாயிகளின் வங்கி கணக்குகளுக்கு கடன் தொகைகளை நேரடியாக பட்டுவாடா செய்யும் அமைப்புகள் உருவாக்கப்படும்.</p>
+                </div>
+            </section>
+
+            <!-- Page: Add Member -->
+            <section id="page-add-member" class="content-page">
+                <header class="content-header">
+                    <div>
+                        <h2 class="page-title">புதிய உறுப்பினர் சேர்க்கை (Add New Member)</h2>
+                        <p class="page-subtitle">கூட்டுறவு சங்கத்தில் புதிய கடன் உறுப்பினர் விவரங்களை மாஸ்டர் டேட்டாவில் சேர்த்தல்</p>
+                    </div>
+                </header>
+
+                <div class="card form-card" style="max-width: 900px; margin: 0 auto 30px auto;">
+                    <div class="card-header">
+                        <h3>உறுப்பினர் விபரங்கள் படிவம்</h3>
+                    </div>
+                    <div class="card-body">
+                        <form id="add-member-form">
+                            <!-- Dynamic form fields populated based on Google Sheets headers -->
+                            <div id="dynamic-add-member-fields"></div>
+
+                            <div class="form-group margin-top-lg text-center" style="display: flex; gap: 15px; justify-content: flex-end;">
+                                <button type="submit" class="btn btn-primary" id="btn-submit-new-member" style="padding: 12px 28px;">
+                                    உறுப்பினரைச் சேர் (Add Member)
+                                </button>
+                                <button type="button" class="btn btn-secondary" id="btn-clear-new-member" style="padding: 12px 28px;">
+                                    சுத்தம் செய் (Clear)
+                                </button>
+                            </div>
+                        </form>
+                        <div id="add-member-status" class="margin-top-md font-sm font-bold text-center"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Page: Google Sheet Sync Settings -->
+            <section id="page-sheet-sync" class="content-page">
+                <header class="content-header">
+                    <div>
+                        <h2 class="page-title" data-i18n="config_header">கூகுள் சீட் இணைப்பு (Live Sync)</h2>
+                        <p class="page-subtitle">கூகுள் சீட் வெப் ஆப் URL உடன் அப்ளிகேஷனை இணைத்து தகவல்களைத் தானாகப் புதுப்பித்தல்</p>
+                    </div>
+                </header>
+
+                <div class="card config-card margin-bottom-md" style="max-width: 800px; margin: 30px auto;">
+                    <div class="card-header">
+                        <h3 data-i18n="config_header">கூகுள் சீட் மாஸ்டர் டேட்டா இணைப்பு (Live Sync)</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="api-connect-form">
+                            <div class="form-group flex-1">
+                                <label for="input-sheet-url" class="form-label" data-i18n="label_sheet_url">கூகுள் ஆப்ஸ் ஸ்கிரிப்ட் வெப் ஆப் URL (Google Apps Script Web App URL)</label>
+                                <input type="text" id="input-sheet-url" placeholder="https://script.google.com/macros/s/.../exec" class="search-input full-width">
+                            </div>
+                            <div class="btn-group-connect">
+                                <button type="button" class="btn btn-primary btn-connect-action" id="btn-connect-sheet" data-i18n="btn_connect">இணைக்கவும் (Connect)</button>
+                                <button type="button" class="btn btn-secondary btn-connect-action hidden" id="btn-disconnect-sheet" data-i18n="btn_disconnect">துண்டிக்கவும் (Disconnect)</button>
+                            </div>
+                        </div>
+                        <div class="connection-status-info">
+                            <span class="status-indicator-dot dot-inactive" id="connection-status-dot"></span>
+                            <span class="status-text" id="connection-status-text" data-i18n="status_not_connected">இணைக்கப்படவில்லை (உள்ளூர் மாக்கப் தரவு காட்டப்படுகிறது)</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    
+    <!-- Modal: Edit Member Details -->
+    <div id="modal-edit-member" class="modal-overlay">
+        <div class="modal-card card">
+            <div class="modal-header">
+                <h3 data-i18n="edit_modal_title">உறுப்பினர் விபரங்கள் திருத்தம்</h3>
+                <button type="button" class="close-modal-btn" id="btn-close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="edit-member-form">
+                    <input type="hidden" id="edit-member-row-num">
+                    
+                    <!-- Form fields generated dynamically based on Sheet headers -->
+                    <div id="dynamic-form-fields"></div>
+
+                    <div class="modal-footer margin-top-md">
+                        <button type="submit" class="btn btn-primary" id="btn-save-member" data-i18n="btn_save">அப்டேட் செய்க (Update)</button>
+                        <button type="button" class="btn btn-secondary" id="btn-cancel-edit" data-i18n="btn_cancel">இரத்து செய்க</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script -->
+    <script src="app.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('Service Worker registered successfully.'))
+                    .catch(err => console.log('Service Worker registration failed:', err));
+            });
+        }
+    </script>
+</body>
+</html>

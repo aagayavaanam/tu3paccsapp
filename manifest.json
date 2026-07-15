@@ -1,0 +1,16 @@
+{
+  "name": "TU3 PACCS Loan Management",
+  "short_name": "TU3 PACCS",
+  "description": "Cooperative bank loan management and interest calculation system",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#022c22",
+  "theme_color": "#0d9488",
+  "icons": [
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

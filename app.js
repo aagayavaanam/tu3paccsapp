@@ -558,8 +558,14 @@ function calculateLoan() {
 
     // Interest Calculations
     // Formula: Principal * Rate% * (Days / 365)
-    const normalInterest = principal * (interestRate / 100) * (normalInterestDays / 365);
-    const penalInterest = principal * (penalRate / 100) * (penalDays / 365);
+    const normalInterestRaw = principal * (interestRate / 100) * (normalInterestDays / 365);
+    const penalInterestRaw = principal * (penalRate / 100) * (penalDays / 365);
+    
+    // Round off normal interest and penal interest individually
+    const normalInterest = Math.round(normalInterestRaw);
+    const penalInterest = Math.round(penalInterestRaw);
+    
+    // Total interest is the sum of the rounded values
     const totalInterest = normalInterest + penalInterest;
     const totalPayable = principal + totalInterest;
 

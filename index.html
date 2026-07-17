@@ -152,6 +152,47 @@
                         </ul>
                     </li>
 
+                    <!-- Prepare Disbursement Dropdown -->
+                    <li class="nav-item has-submenu">
+                        <button class="nav-link menu-trigger" id="btn-disbursement-menu">
+                            <span class="nav-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                    <polyline points="14 2 14 8 20 8"></polyline>
+                                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                                    <polyline points="10 9 9 9 8 9"></polyline>
+                                </svg>
+                            </span>
+                            <span class="nav-label">பட்டுவாடா தயார் செய்</span>
+                            <span class="submenu-arrow">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="6 9 12 15 18 9"></polyline>
+                                </svg>
+                            </span>
+                        </button>
+                        <ul class="submenu-list">
+                            <li class="submenu-item">
+                                <a href="#disbursement-kcc" class="submenu-link" id="link-disbursement-kcc">
+                                    <span class="dot"></span>
+                                    <span>கேசிசி பட்டுவாடா</span>
+                                </a>
+                            </li>
+                            <li class="submenu-item">
+                                <a href="#disbursement-kcc-list" class="submenu-link" id="link-disbursement-kcc-list">
+                                    <span class="dot"></span>
+                                    <span>கேசிசி பட்டியல்</span>
+                                </a>
+                            </li>
+                            <li class="submenu-item">
+                                <a href="#disbursement-ah" class="submenu-link" id="link-disbursement-ah">
+                                    <span class="dot"></span>
+                                    <span>AH பட்டுவாடா</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
                     <!-- Google Sheet Sync Settings -->
                     <li class="nav-item">
                         <a href="#sheet-sync" class="nav-link" id="link-sheet-sync">
@@ -1125,25 +1166,507 @@
                 </div>
             </section>
 
-            <!-- Page: Disbursement (Placeholder Page) -->
-            <section id="page-disbursement" class="content-page">
+            <!-- Page: KCC Disbursement Builder -->
+            <section id="page-disbursement-kcc" class="content-page">
                 <header class="content-header">
                     <div>
-                        <h2 class="page-title" data-i18n="disburse_title">பட்டுவாடா தயார் செய்தல்</h2>
-                        <p class="page-subtitle" data-i18n="disburse_subtitle">ஒப்புதல் அளிக்கப்பட்ட கடன்களுக்கான பட்டுவாடா திட்டங்கள்</p>
+                        <h2 class="page-title">கேசிசி பட்டுவாடா தயார் செய்தல் (KCC Disbursement)</h2>
+                        <p class="page-subtitle">கடன்தாரர்களைத் தேர்ந்தெடுத்து பட்டுவாடா விபரங்களை உள்ளீடு செய்து 10 வகையான படிவங்களை அச்சிடுதல்</p>
                     </div>
                 </header>
 
-                <div class="placeholder-container">
-                    <div class="placeholder-visual">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="placeholder-icon">
-                            <rect x="2" y="4" width="20" height="16" rx="2" ry="2"></rect>
-                            <line x1="12" y1="10" x2="12" y2="16"></line>
-                            <line x1="8" y1="12" x2="16" y2="12"></line>
-                        </svg>
+
+
+                <!-- Input Form Card -->
+                <div class="card margin-bottom-md">
+                    <div class="card-header" style="background-color: var(--primary-light);">
+                        <h3 class="text-primary font-bold">📋 கேசிசி பட்டுவாடா படிவம் (8 பகுதிகள்)</h3>
                     </div>
-                    <h3 class="placeholder-title" data-i18n="disburse_placeholder_title">பட்டுவாடா மேலாண்மைத் தளம்</h3>
-                    <p class="placeholder-desc" data-i18n="disburse_placeholder_desc">இந்த தொகுதி எதிர்கால மேம்பாட்டிற்காக ஒதுக்கப்பட்டுள்ளது. இங்கு விவசாயிகளின் வங்கி கணக்குகளுக்கு கடன் தொகைகளை நேரடியாக பட்டுவாடா செய்யும் அமைப்புகள் உருவாக்கப்படும்.</p>
+                    <div class="card-body">
+                        <!-- Part 1: தொகுதி விபரம் -->
+                        <div class="disbursement-section margin-bottom-lg border-bottom padding-bottom-md">
+                            <h4 class="font-bold text-primary margin-bottom-sm">பகுதி 1: தொகுதி விபரம் (Batch Details)</h4>
+                            <div class="api-connect-form" style="display: flex; gap: 15px; flex-wrap: wrap;">
+                                <div class="form-group" style="flex: 1; min-width: 150px;">
+                                    <label class="form-label font-bold">RCL எண் *</label>
+                                    <input type="text" id="disb-kcc-rcl-no" value="107/25-26/P1" class="search-input full-width">
+                                </div>
+                                <div class="form-group" style="flex: 1; min-width: 150px;">
+                                    <label class="form-label font-bold">RCL தேதி *</label>
+                                    <input type="date" id="disb-kcc-rcl-date" value="2026-04-15" class="search-input full-width">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Part 2: Resolution Details -->
+                        <div class="disbursement-section margin-bottom-lg border-bottom padding-bottom-md">
+                            <h4 class="font-bold text-primary margin-bottom-sm">பகுதி 2: தீர்மான விபரம் (Resolution Details)</h4>
+                            <div class="api-connect-form" style="display: flex; gap: 15px; flex-wrap: wrap;">
+                                <div class="form-group" style="flex: 1; min-width: 150px;">
+                                    <label class="form-label font-bold text-primary">தீர்மான எண் *</label>
+                                    <input type="text" id="disb-kcc-res-no" placeholder="உதாரணம்: 1" class="search-input full-width">
+                                </div>
+                                <div class="form-group" style="flex: 1; min-width: 150px;">
+                                    <label class="form-label font-bold text-primary">தீர்மான தேதி *</label>
+                                    <input type="date" id="disb-kcc-res-date" class="search-input full-width">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Part 3: Basic Details -->
+                        <div class="disbursement-section margin-bottom-lg border-bottom padding-bottom-md">
+                            <h4 class="font-bold text-primary margin-bottom-sm">பகுதி 3: அடிப்படை தகவல்கள் (Basic Details)</h4>
+                            <div class="api-connect-form margin-bottom-md" style="display: flex; gap: 15px; align-items: flex-end;">
+                                <div class="form-group flex-1">
+                                    <label class="form-label font-bold">A Class எண் உள்ளிடவும் *</label>
+                                    <input type="text" id="disb-kcc-aclass-input" placeholder="உதாரணம்: PACS-1024" class="search-input full-width">
+                                </div>
+                                <button type="button" class="btn btn-primary" id="btn-disb-kcc-lookup" style="height: 42px; padding: 0 25px;">விவரங்களை ஏற்செய்</button>
+                            </div>
+
+                            <!-- Auto-populated details -->
+                            <div class="profile-card-grid" style="background: var(--bg-hover); padding: 15px; border-radius: 8px; font-size: 13px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                                <div class="profile-field-item">
+                                    <span class="profile-field-label">A Class எண்:</span>
+                                    <span class="profile-field-value font-bold text-primary" id="lbl-disb-kcc-aclass">-</span>
+                                </div>
+                                <div class="profile-field-item">
+                                    <span class="profile-field-label">எஸ்பி எண் (SB No):</span>
+                                    <span class="profile-field-value font-bold" id="lbl-disb-kcc-sb">-</span>
+                                </div>
+                                <div class="profile-field-item">
+                                    <span class="profile-field-label">இஆர்பி எண் (ERP No):</span>
+                                    <span class="profile-field-value font-bold" id="lbl-disb-kcc-erp">-</span>
+                                </div>
+                                <div class="profile-field-item">
+                                    <span class="profile-field-label">இனிசியல் (Initials):</span>
+                                    <span class="profile-field-value font-bold" id="lbl-disb-kcc-initials">-</span>
+                                </div>
+                                <div class="profile-field-item">
+                                    <span class="profile-field-label">உறுப்பினர் பெயர்:</span>
+                                    <span class="profile-field-value font-bold" id="lbl-disb-kcc-name">-</span>
+                                </div>
+                                <div class="profile-field-item">
+                                    <span class="profile-field-label">தகப்பனார் பெயர்:</span>
+                                    <span class="profile-field-value" id="lbl-disb-kcc-father">-</span>
+                                </div>
+                                <div class="profile-field-item">
+                                    <span class="profile-field-label">கிராமம் (Village):</span>
+                                    <span class="profile-field-value" id="lbl-disb-kcc-address">-</span>
+                                </div>
+                                <div class="profile-field-item">
+                                    <span class="profile-field-label">குடும்ப அட்டை எண் (Ration):</span>
+                                    <span class="profile-field-value" id="lbl-disb-kcc-ration">-</span>
+                                </div>
+                                <div class="profile-field-item">
+                                    <span class="profile-field-label">எம்டிசிசி எண் (MDCC No):</span>
+                                    <span class="profile-field-value" id="lbl-disb-kcc-mdcc">-</span>
+                                </div>
+                                <div class="profile-field-item">
+                                    <span class="profile-field-label">நாமினியின் பெயர்:</span>
+                                    <span class="profile-field-value" id="lbl-disb-kcc-nominee">-</span>
+                                </div>
+                                <div class="profile-field-item">
+                                    <span class="profile-field-label">உறவு முறை (Relationship):</span>
+                                    <span class="profile-field-value" id="lbl-disb-kcc-relationship">-</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Part 4: Land Details -->
+                        <div class="disbursement-section margin-bottom-lg border-bottom padding-bottom-md">
+                            <h4 class="font-bold text-primary margin-bottom-sm">பகுதி 4: நில விபரம் (Land Details)</h4>
+                            <div class="api-connect-form" style="display: flex; gap: 15px; flex-wrap: wrap;">
+                                <div class="form-group" style="flex: 1; min-width: 150px;">
+                                    <label class="form-label font-bold text-primary">சர்வே எண் (Survey No) *</label>
+                                    <input type="text" id="disb-kcc-survey-no" placeholder="e.g. 34/4" class="search-input full-width">
+                                </div>
+                                <div class="form-group" style="flex: 1; min-width: 150px;">
+                                    <label class="form-label font-bold text-primary">பரப்பு (ஏக்கர்) *</label>
+                                    <input type="number" id="disb-kcc-area" step="0.01" placeholder="உதாரணம்: 1.5" class="search-input full-width">
+                                </div>
+                                <div class="form-group" style="flex: 1; min-width: 150px;">
+                                    <label class="form-label font-bold text-primary">பயிர் (Crop) *</label>
+                                    <select id="disb-kcc-crop" class="search-input select-input full-width">
+                                        <option value="தென்னை">தென்னை</option>
+                                        <option value="வாழை">வாழை</option>
+                                        <option value="மரவள்ளி">மரவள்ளி</option>
+                                        <option value="மா">மா</option>
+                                        <option value="கொய்யா">கொய்யா</option>
+                                        <option value="ஏலம்">ஏலம்</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Part 5: தற்போதைய கடன் விபரம் -->
+                        <div class="disbursement-section margin-bottom-lg border-bottom padding-bottom-md">
+                            <h4 class="font-bold text-primary margin-bottom-sm">பகுதி 5: தற்போதைய கடன் விபரம் (Current Loan Details)</h4>
+                            <div class="api-connect-form" style="display: flex; gap: 15px; flex-wrap: wrap;">
+                                <div class="form-group" style="flex: 1; min-width: 120px;">
+                                    <label class="form-label font-bold">விதை (Seed)</label>
+                                    <input type="text" id="disb-kcc-seed" placeholder="0" class="search-input full-width text-right">
+                                </div>
+                                <div class="form-group" style="flex: 1; min-width: 120px;">
+                                    <label class="form-label font-bold">இராசாயன உரம்</label>
+                                    <input type="text" id="disb-kcc-fertilizer" placeholder="0" class="search-input full-width text-right">
+                                </div>
+                                <div class="form-group" style="flex: 1; min-width: 120px;">
+                                    <label class="form-label font-bold">தொழுஉரம் (Compost)</label>
+                                    <input type="text" id="disb-kcc-compost" placeholder="0" class="search-input full-width text-right">
+                                </div>
+                                <div class="form-group" style="flex: 1; min-width: 120px;">
+                                    <label class="form-label font-bold">பூச்சிமருந்து</label>
+                                    <input type="text" id="disb-kcc-pesticide" placeholder="0" class="search-input full-width text-right">
+                                </div>
+                                <div class="form-group" style="flex: 1; min-width: 120px;">
+                                    <label class="form-label font-bold">ரொக்கம் (Cash)</label>
+                                    <input type="text" id="disb-kcc-cash" placeholder="0" class="search-input full-width text-right">
+                                </div>
+                                <div class="form-group" style="flex: 1; min-width: 150px;">
+                                    <label class="form-label font-bold text-success">மொத்த தொகை (Total) *</label>
+                                    <input type="text" id="disb-kcc-amount" readonly class="search-input full-width font-bold text-success text-right" style="background-color: var(--bg-hover);" value="0">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Part 6: உறுப்பினரின் பிற விபரங்கள் -->
+                        <div class="disbursement-section margin-bottom-lg border-bottom padding-bottom-md">
+                            <h4 class="font-bold text-primary margin-bottom-sm">பகுதி 6: உறுப்பினரின் பிற விபரங்கள் (Member's Other Details)</h4>
+                            <div class="api-connect-form" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; width: 100%;">
+                                <div class="form-group">
+                                    <label class="form-label font-bold">உறுப்பினர் நிலை</label>
+                                    <select id="disb-kcc-member-status" class="search-input select-input full-width">
+                                        <option value="பழைய உறுப்பினர்">பழைய உறுப்பினர்</option>
+                                        <option value="புதிய உறுப்பினர்">புதிய உறுப்பினர்</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label font-bold">இனம் (Category)</label>
+                                    <select id="disb-kcc-caste-category" class="search-input select-input full-width">
+                                        <option value="SC/ST">SC/ST</option>
+                                        <option value="Others">Others</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label font-bold">விவசாயி நில விபரம் (Land Class)</label>
+                                    <select id="disb-kcc-farmer-category" class="search-input select-input full-width">
+                                        <option value="MF">MF</option>
+                                        <option value="SF">SF</option>
+                                        <option value="OF">OF</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label font-bold">ஆண் அல்லது பெண்</label>
+                                    <select id="disb-kcc-gender" class="search-input select-input full-width">
+                                        <option value="ஆண் உறுப்பினர்">ஆண் உறுப்பினர்</option>
+                                        <option value="பெண் உறுப்பினர்">பெண் உறுப்பினர்</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label font-bold">உடலில் உள்ள குறைபாடு</label>
+                                    <input type="text" id="disb-kcc-disability" value="0" class="search-input full-width">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label font-bold">வெண்நிலை / தொடர்ச்சி அடமானம்</label>
+                                    <select id="disb-kcc-loan-status" class="search-input select-input full-width">
+                                        <option value="வெந்நிலை ஜாமீன் மூலம் முன்கடன் செலுத்தியவர்">வெந்நிலை ஜாமீன் மூலம் முன்கடன் செலுத்தியவர்</option>
+                                        <option value="வெந்நிலை ஜாமீன் மூலம் புதிய உறுப்பினர்">வெந்நிலை ஜாமீன் மூலம் புதிய உறுப்பினர்</option>
+                                        <option value="தொடர்ச்சி அடமானம் மூலம் முன்கடன் திருப்பி செலுத்தியவர்">தொடர்ச்சி அடமானம் மூலம் முன்கடன் திருப்பி செலுத்தியவர்</option>
+                                        <option value="தொடர்ச்சி அடமானம் மூலம் புதிய உறுப்பினர்">தொடர்ச்சி அடமானம் மூலம் புதிய உறுப்பினர்</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label font-bold">ஆதார விபரம்</label>
+                                    <select id="disb-kcc-collateral-type" class="search-input select-input full-width">
+                                        <option value="நபர் ஜாமீன்">நபர் ஜாமீன்</option>
+                                        <option value="நகை அடமானம்">நகை அடமானம்</option>
+                                        <option value="நில அடமானம்">நில அடமானம்</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Part 7: பிடிக்கும் பகுதி -->
+                        <div class="disbursement-section margin-bottom-lg border-bottom padding-bottom-md">
+                            <h4 class="font-bold text-primary margin-bottom-sm">பகுதி 7: பிடிக்கும் பகுதி (Deduction Section)</h4>
+                            <div class="api-connect-form" style="display: flex; gap: 15px; flex-wrap: wrap;">
+                                <div class="form-group" style="flex: 1; min-width: 150px;">
+                                    <label class="form-label font-bold">புத்தக பாரம் (Passbook Fee)</label>
+                                    <input type="text" id="disb-kcc-book-fee" value="0" class="search-input full-width text-right">
+                                </div>
+                                <div class="form-group" style="flex: 1; min-width: 150px;">
+                                    <label class="form-label font-bold">காப்பீடு (Insurance)</label>
+                                    <input type="text" id="disb-kcc-insurance" value="0" class="search-input full-width text-right">
+                                </div>
+                                <div class="form-group" style="flex: 1; min-width: 150px;">
+                                    <label class="form-label font-bold">பங்குத்தொகை (Share Capital)</label>
+                                    <input type="text" id="disb-kcc-share-amount" value="0" class="search-input full-width text-right">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Part 8: முன்கடன் திருப்பி செலுத்திய விபரம் -->
+                        <div class="disbursement-section margin-bottom-lg border-bottom padding-bottom-md">
+                            <h4 class="font-bold text-primary margin-bottom-sm">பகுதி 8: முன்கடன் திருப்பி செலுத்திய விபரம் (Previous Loan Repayment Details)</h4>
+                            <div class="api-connect-form" style="display: flex; gap: 15px; flex-wrap: wrap;">
+                                <div class="form-group" style="flex: 1; min-width: 150px;">
+                                    <label class="form-label font-bold">முன்கடன் எண்</label>
+                                    <input type="text" id="disb-kcc-prev-loan-no" value="KCC - " class="search-input full-width">
+                                </div>
+                                <div class="form-group" style="flex: 1; min-width: 150px;">
+                                    <label class="form-label font-bold">முன்கடன் தேதி</label>
+                                    <input type="date" id="disb-kcc-prev-loan-date" class="search-input full-width">
+                                </div>
+                                <div class="form-group" style="flex: 1; min-width: 150px;">
+                                    <label class="form-label font-bold">முன்கடன் தொகை</label>
+                                    <input type="text" id="disb-kcc-prev-loan-amount" placeholder="0" class="search-input full-width text-right">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Hidden fields to support previous logic -->
+                        <input type="hidden" id="disb-kcc-loan-no" value="KCC-AUTO">
+                        <input type="hidden" id="disb-kcc-date" value="2026-05-11">
+
+                        <div class="margin-top-md text-right">
+                            <button type="button" class="btn btn-primary" id="btn-disb-kcc-add" style="padding: 12px 30px; font-weight: bold;">பட்டியலில் சேர் (Add to List)</button>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- Page: KCC Disbursement List (Submenu 2) -->
+            <section id="page-disbursement-kcc-list" class="content-page">
+                <header class="content-header">
+                    <div>
+                        <h2 class="page-title">கேசிசி பட்டுவாடா பட்டியல் (KCC Disbursement List)</h2>
+                        <p class="page-subtitle">சேர்க்கப்பட்ட கடன்தாரர்களின் பட்டியல், திருத்தம், நீக்கம் மற்றும் இறுதி சமர்ப்பிப்பு</p>
+                    </div>
+                </header>
+
+                <!-- Batch Table Card -->
+                <div class="card margin-bottom-md">
+                    <div class="card-header" style="background-color: var(--primary-light);">
+                        <h3 class="text-primary font-bold">📋 நடப்புப் பட்டுவாடா பட்டியல் (Current Batch Members)</h3>
+                    </div>
+                    <div class="card-body">
+                        <div style="overflow-x: auto;">
+                            <table class="members-table" id="tbl-disb-kcc-batch">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 60px;">வ.எண்</th>
+                                        <th>A Class எண்</th>
+                                        <th>பெயர்</th>
+                                        <th>பரப்பளவு (ஏக்கர்)</th>
+                                        <th>கடன் தொகை</th>
+                                        <th style="width: 140px;">செயல்</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Populated dynamically -->
+                                    <tr class="empty-row"><td colspan="6" class="text-center text-muted">பட்டியலில் உறுப்பினர்கள் யாரும் இல்லை</td></tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr style="background: var(--bg-hover); font-weight: bold;">
+                                        <td colspan="3" class="text-right">மொத்தம்:</td>
+                                        <td id="lbl-disb-kcc-total-area">0.00</td>
+                                        <td id="lbl-disb-kcc-total-amount">₹0</td>
+                                        <td></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Final Submit and Print Options Card -->
+                <div class="card margin-bottom-md">
+                    <div class="card-header" style="background-color: var(--primary-light);">
+                        <h3 class="text-primary font-bold">📋 பட்டுவாடா இறுதிசெய்தல் மற்றும் அச்சிடுதல்</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center padding-bottom-md border-bottom">
+                            <button type="button" class="btn btn-primary" id="btn-disb-kcc-submit" style="padding: 12px 30px; font-weight: bold;">
+                                💾 கூகுள் சீட்டிற்கு அனுப்பு (Send to Google Sheets)
+                            </button>
+                            <div id="disb-kcc-status" class="margin-top-xs text-secondary font-sm font-bold"></div>
+                        </div>
+
+                        <div class="margin-top-md api-connect-form hidden" id="box-disb-kcc-print-actions" style="display: flex; gap: 15px; align-items: flex-end; justify-content: center;">
+                            <div class="form-group" style="width: 250px;">
+                                <label class="form-label font-bold text-primary">அச்சிட வேண்டிய படிவம்</label>
+                                <select id="sel-disb-kcc-form" class="search-input select-input full-width">
+                                    <option value="KCC1">KCC 1 (Disbursement 1)</option>
+                                    <option value="KCC2">KCC 2 (Disbursement 2)</option>
+                                    <option value="Insurance">Insurance (பயிர்க் காப்பீடு)</option>
+                                    <option value="Jabitha">Jabitha (ஜாபிதா பட்டியல்)</option>
+                                    <option value="Sign Page">Sign Page (கையெழுத்துப் படிவம்)</option>
+                                    <option value="Bank Sheet">Bank Sheet (வங்கி தாள்)</option>
+                                    <option value="Cropwise">Cropwise (பயிர்வாரி சுருக்கம்)</option>
+                                    <option value="Note Order">Note Order (அலுவலகக் குறிப்பு)</option>
+                                    <option value="Resolution">Resolution (தீர்மானம்)</option>
+                                    <option value="KCC 7%">KCC 7% (வட்டி மானியம்)</option>
+                                </select>
+                            </div>
+                            <button type="button" class="btn btn-primary" id="btn-disb-kcc-print" style="height: 42px;">
+                                PDF அச்சிடு
+                            </button>
+                            <button type="button" class="btn btn-secondary" id="btn-disb-kcc-excel" style="height: 42px;">
+                                Excel (.xlsx) டவுன்லோடு
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Page: AH Disbursement Builder -->
+            <section id="page-disbursement-ah" class="content-page">
+                <header class="content-header">
+                    <div>
+                        <h2 class="page-title">AH பட்டுவாடா தயார் செய்தல் (AH Disbursement)</h2>
+                        <p class="page-subtitle">கால்நடை கடன்தாரர்களைத் தேர்ந்தெடுத்து பட்டுவாடா விபரங்களை உள்ளீடு செய்து படிவங்களை அச்சிடுதல்</p>
+                    </div>
+                </header>
+
+
+
+                <!-- Input Form Card -->
+                <div class="card margin-bottom-md">
+                    <div class="card-header">
+                        <h3>2. உறுப்பினர் பட்டுவாடா விவரங்கள் உள்ளீடு</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="api-connect-form margin-bottom-md" style="display: flex; gap: 15px; align-items: flex-end;">
+                            <div class="form-group flex-1">
+                                <label class="form-label font-bold text-primary">A Class எண் உள்ளிடவும் *</label>
+                                <input type="text" id="disb-ah-aclass-input" placeholder="உதாரணம்: PACS-1024" class="search-input full-width">
+                            </div>
+                            <button type="button" class="btn btn-primary" id="btn-disb-ah-lookup" style="height: 42px; padding: 0 25px;">விவரங்களை ஏற்செய்</button>
+                        </div>
+
+                        <!-- Auto-populated details -->
+                        <div class="profile-card-grid margin-bottom-md" style="background: var(--bg-hover); padding: 15px; border-radius: 8px; font-size: 13px;">
+                            <div class="profile-field-item">
+                                <span class="profile-field-label">உறுப்பினர் பெயர்:</span>
+                                <span class="profile-field-value font-bold" id="lbl-disb-ah-name">-</span>
+                            </div>
+                            <div class="profile-field-item">
+                                <span class="profile-field-label">தந்தை பெயர்:</span>
+                                <span class="profile-field-value" id="lbl-disb-ah-father">-</span>
+                            </div>
+                            <div class="profile-field-item">
+                                <span class="profile-field-label">SB கணக்கு எண்:</span>
+                                <span class="profile-field-value font-bold" id="lbl-disb-ah-sb">-</span>
+                            </div>
+                            <div class="profile-field-item">
+                                <span class="profile-field-label">ERP எண்:</span>
+                                <span class="profile-field-value font-bold" id="lbl-disb-ah-erp">-</span>
+                            </div>
+                            <div class="profile-field-item">
+                                <span class="profile-field-label">முகவரி:</span>
+                                <span class="profile-field-value" id="lbl-disb-ah-address">-</span>
+                            </div>
+                        </div>
+
+                        <!-- Manual entry questions -->
+                        <div class="api-connect-form" style="display: flex; gap: 15px; flex-wrap: wrap;">
+                            <div class="form-group" style="flex: 1; min-width: 150px;">
+                                <label class="form-label">கடன் எண் (Loan No) *</label>
+                                <input type="text" id="disb-ah-loan-no" placeholder="e.g. AH-9832" class="search-input full-width">
+                            </div>
+                            <div class="form-group" style="flex: 1; min-width: 150px;">
+                                <label class="form-label">பட்டுவாடா தேதி *</label>
+                                <input type="date" id="disb-ah-date" class="search-input full-width">
+                            </div>
+                            <div class="form-group" style="flex: 1; min-width: 150px;">
+                                <label class="form-label">புல எண் (Survey No) *</label>
+                                <input type="text" id="disb-ah-survey-no" class="search-input full-width">
+                            </div>
+                            <div class="form-group" style="flex: 1; min-width: 120px;">
+                                <label class="form-label">பரப்பளவு (ஏக்கர்) *</label>
+                                <input type="number" id="disb-ah-area" step="0.01" value="1.0" class="search-input full-width">
+                            </div>
+                            <div class="form-group" style="flex: 1; min-width: 150px;">
+                                <label class="form-label">கடன் தொகை (₹) *</label>
+                                <input type="text" id="disb-ah-amount" placeholder="e.g. 45,000" class="search-input full-width">
+                            </div>
+                        </div>
+
+                        <div class="margin-top-md text-right">
+                            <button type="button" class="btn btn-primary" id="btn-disb-ah-add">பட்டியலில் சேர் (Add to List)</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Batch Table Card -->
+                <div class="card margin-bottom-md">
+                    <div class="card-header">
+                        <h3>3. நடப்புப் பட்டுவாடா பட்டியல் (Current Batch Members)</h3>
+                    </div>
+                    <div class="card-body">
+                        <div style="overflow-x: auto;">
+                            <table class="members-table" id="tbl-disb-ah-batch">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 60px;">வ.எண்</th>
+                                        <th>A Class</th>
+                                        <th>பெயர்</th>
+                                        <th>SB கணக்கு</th>
+                                        <th>புல எண்</th>
+                                        <th>பரப்பளவு (ஏக்கர்)</th>
+                                        <th>கடன் தொகை</th>
+                                        <th>கடன் எண்</th>
+                                        <th>தேதி</th>
+                                        <th style="width: 80px;">செயல்</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="empty-row"><td colspan="10" class="text-center text-muted">பட்டியலில் உறுப்பினர்கள் யாரும் இல்லை</td></tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr style="background: var(--bg-hover); font-weight: bold;">
+                                        <td colspan="5" class="text-right">மொத்தம்:</td>
+                                        <td id="lbl-disb-ah-total-area">0.00</td>
+                                        <td id="lbl-disb-ah-total-amount">₹0</td>
+                                        <td colspan="3"></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Final Submit and Print Options Card -->
+                <div class="card margin-bottom-md">
+                    <div class="card-header">
+                        <h3>4. பட்டுவாடா இறுதிசெய்தல் மற்றும் அச்சிடுதல்</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center padding-bottom-md border-bottom">
+                            <button type="button" class="btn btn-primary" id="btn-disb-ah-submit" style="padding: 12px 30px; font-weight: bold;">
+                                💾 கூகுள் சீட்டிற்கு அனுப்பு (Send to Google Sheets)
+                            </button>
+                            <div id="disb-ah-status" class="margin-top-xs text-secondary font-sm font-bold"></div>
+                        </div>
+
+                        <div class="margin-top-md api-connect-form hidden" id="box-disb-ah-print-actions" style="display: flex; gap: 15px; align-items: flex-end; justify-content: center;">
+                            <div class="form-group" style="width: 250px;">
+                                <label class="form-label font-bold text-primary">அச்சிட வேண்டிய படிவம்</label>
+                                <select id="sel-disb-ah-form" class="search-input select-input full-width">
+                                    <option value="Bank Sheet">Bank Sheet (வங்கி தாள்)</option>
+                                    <option value="Resolution">Resolution (தீர்மானம்)</option>
+                                </select>
+                            </div>
+                            <button type="button" class="btn btn-primary" id="btn-disb-ah-print" style="height: 42px;">
+                                PDF அச்சிடு
+                            </button>
+                            <button type="button" class="btn btn-secondary" id="btn-disb-ah-excel" style="height: 42px;">
+                                Excel (.xlsx) டவுன்லோடு
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </section>
 
@@ -1238,6 +1761,7 @@
 
     <!-- Script -->
     <script src="app.js"></script>
+    <script src="disbursement.js"></script>
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {

@@ -1353,7 +1353,9 @@ function setupPrintControllerModule() {
     const ahStatusText = document.getElementById('print-ah-status');
     
     const btnPrintAhSheet = document.getElementById('btn-print-ah-sheet');
-    const btnPrintAhDecSheet = document.getElementById('btn-print-ah-dec-sheet');
+    const btnPrintAhSelfDec = document.getElementById('btn-print-ah-self-dec');
+    const btnPrintAhPhoto = document.getElementById('btn-print-ah-photo');
+    const btnPrintAh7Dec = document.getElementById('btn-print-ah-7-dec');
     
     let kccSelectedBorrower = null;
     let kccSelectedGuarantor = null;
@@ -1582,7 +1584,9 @@ function setupPrintControllerModule() {
     if (btnPrintKccDecSheet) btnPrintKccDecSheet.addEventListener('click', () => requestPrintSheet('declaration', true));
     
     if (btnPrintAhSheet) btnPrintAhSheet.addEventListener('click', () => requestPrintSheet('ah', false));
-    if (btnPrintAhDecSheet) btnPrintAhDecSheet.addEventListener('click', () => requestPrintSheet('declaration', false));
+    if (btnPrintAhSelfDec) btnPrintAhSelfDec.addEventListener('click', () => requestPrintSheet('ah_self_dec', false));
+    if (btnPrintAhPhoto) btnPrintAhPhoto.addEventListener('click', () => requestPrintSheet('ah_photo', false));
+    if (btnPrintAh7Dec) btnPrintAh7Dec.addEventListener('click', () => requestPrintSheet('ah_7_dec', false));
 }
 
 function getInputRestrictionType(colName) {

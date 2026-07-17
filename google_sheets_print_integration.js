@@ -45,12 +45,34 @@ function findSheetDynamically(ss, type) {
         return sheets[i];
       }
     } else if (type === "ah") {
-      if (sheetName.indexOf("ah") !== -1 || sheetName.indexOf("animal") !== -1 || sheetName.indexOf("கால்நடை") !== -1) {
+      // Must contain 'ah' but NOT contain declaration terms
+      if (sheetName.indexOf("ah") !== -1 && 
+          sheetName.indexOf("self") === -1 && 
+          sheetName.indexOf("photo") === -1 && 
+          sheetName.indexOf("7") === -1 && 
+          sheetName.indexOf("உறுதிமொழி") === -1 && 
+          sheetName.indexOf("புகைப்பட") === -1 && 
+          sheetName.indexOf("ஒப்புதல்") === -1) {
+        return sheets[i];
+      }
+    } else if (type === "ah_self_dec") {
+      if (sheetName.indexOf("ah") !== -1 && (sheetName.indexOf("self") !== -1 || sheetName.indexOf("சுய") !== -1 || sheetName.indexOf("உறுதிமொழி") !== -1)) {
+        return sheets[i];
+      }
+    } else if (type === "ah_photo") {
+      if (sheetName.indexOf("ah") !== -1 && (sheetName.indexOf("photo") !== -1 || sheetName.indexOf("படம்") !== -1 || sheetName.indexOf("புகைப்பட") !== -1)) {
+        return sheets[i];
+      }
+    } else if (type === "ah_7_dec") {
+      if (sheetName.indexOf("ah") !== -1 && (sheetName.indexOf("7") !== -1 || sheetName.indexOf("oputal") !== -1 || sheetName.indexOf("ஒப்புதல்") !== -1)) {
         return sheets[i];
       }
     } else if (type === "declaration") {
       if (sheetName.indexOf("dec") !== -1 || sheetName.indexOf("self") !== -1 || sheetName.indexOf("உறுதிமொழி") !== -1 || sheetName.indexOf("ஒப்புதல்") !== -1) {
-        return sheets[i];
+        // Exclude AH declarations if KCC declaration is requested
+        if (sheetName.indexOf("ah") === -1) {
+          return sheets[i];
+        }
       }
     }
   }
@@ -61,6 +83,15 @@ function findSheetDynamically(ss, type) {
   }
   if (type === "ah") {
     return ss.getSheetByName("AH Application") || ss.getSheetByName("AH");
+  }
+  if (type === "ah_self_dec") {
+    return ss.getSheetByName("AH Self Declaration");
+  }
+  if (type === "ah_photo") {
+    return ss.getSheetByName("AH Photo Form");
+  }
+  if (type === "ah_7_dec") {
+    return ss.getSheetByName("AH 7% Declaration");
   }
   if (type === "declaration") {
     return ss.getSheetByName("KCC Self Declaration") || ss.getSheetByName("Self Declaration") || ss.getSheetByName("Declaration") || (sheets.length > 1 ? sheets[1] : sheets[0]);
@@ -80,7 +111,7 @@ function doPost(e) {
     if (params.action === "prepare_print") {
       var memberId = params.member_id;
       var guarantorId = params.guarantor_id || "";
-      var docType = params.doc_type; // "kcc" or "ah" or "declaration"
+      var docType = params.doc_type; // "kcc", "ah", "ah_self_dec", "ah_photo", "ah_7_dec", "declaration"
       
       var targetSheet = findSheetDynamically(ss, docType);
       
@@ -93,20 +124,6 @@ function doPost(e) {
         }
       }
       
-      var targetCell = "";
-      var guarantorCell = "";
-      
-      if (docType === "kcc") {
-        targetCell = "F8"; // F8 is for KCC Application lookup
-        guarantorCell = "E29"; // E29 is for Guarantor lookup
-      } else if (docType === "ah") {
-        targetCell = "I10"; // I10 is for AH Application lookup
-        guarantorCell = "K29"; // K29 is for Guarantor lookup (updated from I29)
-      } else {
-        targetCell = "T4"; // T4 is for Self Declaration lookup
-        guarantorCell = ""; // NO Guarantor ID cell for Declaration
-      }
-      
       if (!targetSheet) {
         return ContentService.createTextOutput(JSON.stringify({
           status: "error", 
@@ -114,12 +131,25 @@ function doPost(e) {
         })).setMimeType(ContentService.MimeType.JSON);
       }
       
-      // Write Borrower A Class ID
-      targetSheet.getRange(targetCell).setValue(memberId);
-      
-      // Write Guarantor A Class ID ONLY for Application forms (KCC/AH)
-      if (guarantorCell !== "") {
-        targetSheet.getRange(guarantorCell).setValue(guarantorId);
+      // Write Borrower and Guarantor IDs to appropriate sheets & coordinates
+      if (docType === "kcc") {
+        targetSheet.getRange("F8").setValue(memberId);
+        targetSheet.getRange("E29").setValue(guarantorId);
+      } else if (docType === "ah" || docType === "ah_self_dec" || docType === "ah_photo" || docType === "ah_7_dec") {
+        // ALWAYS write Borrower ID to I10 and Guarantor ID to K31 on the main "AH Application" sheet.
+        // Other AH sheets will automatically read from it via Google Sheet formulas.
+        var ahAppSheet = findSheetDynamically(ss, "ah");
+        if (ahAppSheet) {
+          ahAppSheet.getRange("I10").setValue(memberId);
+          ahAppSheet.getRange("K31").setValue(guarantorId);
+        } else {
+          // Fallback if main AH Application sheet is missing
+          targetSheet.getRange("I10").setValue(memberId);
+          targetSheet.getRange("K31").setValue(guarantorId);
+        }
+      } else {
+        // KCC Self Declaration (writes to T4 on the declaration sheet)
+        targetSheet.getRange("T4").setValue(memberId);
       }
       
       // Force sheet calculation updates

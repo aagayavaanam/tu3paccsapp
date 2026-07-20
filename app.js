@@ -12,11 +12,11 @@ const translations = {
         home_title: "முகப்பு (Home)",
         home_subtitle: "PACS கூட்டுறவு சங்கம் வட்டி மேலாண்மை மற்றும் கணக்கீட்டுப் பகுதி",
         home_desc: "கூட்டுறவு வங்கி கடன் மேலாண்மை மற்றும் நிகழ்நேர வட்டி கணக்கீட்டு மென்பொருள்.",
-        nav_interest: "வட்டி கணக்கீடு",
+        nav_interest: "வட்டி",
         sub_crop: "பயிர்க்கடன் வட்டி",
         sub_jewel: "நகைக்கடன் வட்டி",
         sub_shg: "SHG வட்டி முறை",
-        nav_members: "கடன் உறுப்பினர்கள்",
+        nav_members: "உறுப்பினர்கள்",
         members_title: "கடன் உறுப்பினர்கள்",
         members_subtitle: "PACS கூட்டுறவு சங்கத்தின் கடன் பெற்ற உறுப்பினர்களின் விவரங்கள்",
         members_list_header: "உறுப்பினர்கள் பட்டியல்",
@@ -44,9 +44,9 @@ const translations = {
         status_active: "நடைமுறையில்",
         status_settled: "முடிவுற்றது",
         nav_apps: "விண்ணப்பப் படிவம்",
-        nav_print_controller: "விண்ணப்ப அச்சு",
+        nav_print_controller: "விண்ணப்பம்",
         nav_disburse: "பட்டுவாடா தயார் செய்தல்",
-        nav_sheet_sync: "கூகுள் சீட் இணைப்பு",
+        nav_sheet_sync: "சீட் இணைப்பு",
         theme_light: "பகல் மோட்",
         theme_dark: "இரவு மோட்",
         admin_role: "கடன் அதிகாரி",
@@ -117,11 +117,11 @@ const translations = {
         home_title: "Home",
         home_subtitle: "PACS Cooperative Society Loan & Interest Portal",
         home_desc: "Cooperative banking loan management and real-time interest calculation software.",
-        nav_interest: "Interest Calculation",
+        nav_interest: "Interest",
         sub_crop: "Crop Loan Interest",
         sub_jewel: "Jewel Loan Interest",
         sub_shg: "SHG Interest Mode",
-        nav_members: "Loan Members",
+        nav_members: "Members",
         members_title: "Loan Members",
         members_subtitle: "Details of PACS Cooperative Society Loan Members",
         members_list_header: "Members List",
@@ -149,9 +149,9 @@ const translations = {
         status_active: "Active",
         status_settled: "Settled",
         nav_apps: "Application Form",
-        nav_print_controller: "Print Application",
+        nav_print_controller: "Print",
         nav_disburse: "Disbursement Prep",
-        nav_sheet_sync: "Google Sheet Sync",
+        nav_sheet_sync: "Sheet Sync",
         theme_light: "Light Mode",
         theme_dark: "Dark Mode",
         admin_role: "Loan Officer",
@@ -342,6 +342,11 @@ function setupRouting() {
                 return;
             }
             
+            // Close all submenus on page navigation
+            submenus.forEach(menu => {
+                menu.classList.remove('expanded');
+            });
+            
             const targetHref = link.getAttribute('href');
             if (!targetHref || !targetHref.startsWith('#')) return;
             
@@ -384,7 +389,7 @@ function setupRouting() {
         });
     });
 
-    // Clicking sidebar header goes to Home
+    // Clicking logo header goes to Home
     const sidebarHeaderBtn = document.getElementById('sidebar-header-btn');
     if (sidebarHeaderBtn) {
         sidebarHeaderBtn.addEventListener('click', () => {
@@ -392,6 +397,15 @@ function setupRouting() {
             if (linkHome) linkHome.click();
         });
     }
+    // Click outside dropdowns closes them
+    document.addEventListener('click', (e) => {
+        const clickedInsideSubmenu = e.target.closest('.has-submenu');
+        if (!clickedInsideSubmenu) {
+            submenus.forEach(menu => {
+                menu.classList.remove('expanded');
+            });
+        }
+    });
 }
 
 /* ==========================================================================

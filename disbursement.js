@@ -632,6 +632,42 @@
                     return;
                 }
 
+                if (docType === "Insurance") {
+                    statusDiv.textContent = "⏳ காப்பீடு விபரம் அச்சு தயாராகிறது...";
+                    try {
+                        printInsuranceHtml(kccBatchMembers);
+                        statusDiv.textContent = "✅ காப்பீடு விபரம் அச்சு தயாராக உள்ளது!";
+                    } catch (e) {
+                        console.error(e);
+                        statusDiv.textContent = "❌ அச்சு பிழை: " + e.message;
+                    }
+                    return;
+                }
+
+                if (docType === "Jabitha") {
+                    statusDiv.textContent = "⏳ ஜாபிதா விபரம் அச்சு தயாராகிறது...";
+                    try {
+                        printJabithaHtml(kccBatchMembers);
+                        statusDiv.textContent = "✅ ஜாபிதா விபரம் அச்சு தயாராக உள்ளது!";
+                    } catch (e) {
+                        console.error(e);
+                        statusDiv.textContent = "❌ அச்சு பிழை: " + e.message;
+                    }
+                    return;
+                }
+
+                if (docType === "Sign Page") {
+                    statusDiv.textContent = "⏳ கையெழுத்துப் படிவம் அச்சு தயாராகிறது...";
+                    try {
+                        printSignPageHtml(kccBatchMembers);
+                        statusDiv.textContent = "✅ கையெழுத்துப் படிவம் அச்சு தயாராக உள்ளது!";
+                    } catch (e) {
+                        console.error(e);
+                        statusDiv.textContent = "❌ அச்சு பிழை: " + e.message;
+                    }
+                    return;
+                }
+
                 const sheetUrl = getSheetUrl();
                 statusDiv.textContent = "⏳ அச்சுக்கோப்பு தயாராகிறது...";
                 
@@ -701,6 +737,39 @@
                 if (docType === "Cropwise") {
                     try {
                         exportCropwiseExcel(kccBatchMembers);
+                        statusDiv.textContent = "✅ எக்செல் கோப்பு பதிவிறக்கம் செய்யப்பட்டது!";
+                    } catch (e) {
+                        console.error(e);
+                        statusDiv.textContent = "❌ எக்செல் பிழை: " + e.message;
+                    }
+                    return;
+                }
+
+                if (docType === "Insurance") {
+                    try {
+                        exportInsuranceExcel(kccBatchMembers);
+                        statusDiv.textContent = "✅ எக்செல் கோப்பு பதிவிறக்கம் செய்யப்பட்டது!";
+                    } catch (e) {
+                        console.error(e);
+                        statusDiv.textContent = "❌ எக்செல் பிழை: " + e.message;
+                    }
+                    return;
+                }
+
+                if (docType === "Jabitha") {
+                    try {
+                        exportJabithaExcel(kccBatchMembers);
+                        statusDiv.textContent = "✅ எக்செல் கோப்பு பதிவிறக்கம் செய்யப்பட்டது!";
+                    } catch (e) {
+                        console.error(e);
+                        statusDiv.textContent = "❌ எக்செல் பிழை: " + e.message;
+                    }
+                    return;
+                }
+
+                if (docType === "Sign Page") {
+                    try {
+                        exportSignPageExcel(kccBatchMembers);
                         statusDiv.textContent = "✅ எக்செல் கோப்பு பதிவிறக்கம் செய்யப்பட்டது!";
                     } catch (e) {
                         console.error(e);
@@ -1376,6 +1445,8 @@
 
         const rclNo = safeSelect('disb-kcc-rcl-no').value.trim();
         const rclDate = safeSelect('disb-kcc-rcl-date').value;
+        const resNo = safeSelect('disb-kcc-res-no')?.value.trim() || '';
+        const resDate = safeSelect('disb-kcc-res-date')?.value || '';
 
         // Open print window
         const w = window.open('', '_blank');
@@ -1528,8 +1599,9 @@
             <h2>KCC பயிர்க்கடன் பட்டுவாடா விபரம்</h2>
         </div>
         
-        <div class="print-meta">
-            மத்திய வங்கி RCL எண்: ${rclNo} &nbsp;&nbsp;&nbsp;&nbsp; தேதி: ${formatDateDDMMYYYY(rclDate)}
+        <div class="print-meta" style="display: flex; justify-content: space-between; font-size: 13px; font-weight: bold; padding-bottom: 4px; border-bottom: 2px solid #000; margin-bottom: 8px;">
+            <div>மத்திய வங்கி RCL எண்: ${rclNo || '-'} &nbsp;&nbsp;&nbsp;&nbsp; தேதி: ${formatDateDDMMYYYY(rclDate) || '-'}</div>
+            <div>தீர்மான எண்: ${resNo || '-'} &nbsp;&nbsp;&nbsp;&nbsp; தீர்மான தேதி: ${formatDateDDMMYYYY(resDate) || '-'}</div>
         </div>
 
         <table>
@@ -1868,8 +1940,12 @@
             return;
         }
 
-        const rclNo = safeSelect('disb-kcc-rcl-no').value.trim();
-        const rclDate = safeSelect('disb-kcc-rcl-date').value;
+        const rclNo = safeSelect('disb-kcc-rcl-no')?.value.trim() || '';
+        const rclDate = safeSelect('disb-kcc-rcl-date')?.value || '';
+        const resNo = safeSelect('disb-kcc-res-no')?.value.trim() || '';
+        const resDate = safeSelect('disb-kcc-res-date')?.value || '';
+        const rawDisbDate = safeSelect('disb-history-date-input')?.value || '';
+        const displayDisbDate = rawDisbDate ? formatDateDDMMYYYY(rawDisbDate) : '____________________';
 
         // Open print window
         const w = window.open('', '_blank');
@@ -2043,8 +2119,10 @@
             <h2>பயிர்க்கடன் பட்டுவாடா விபரம்</h2>
         </div>
         
-        <div class="print-meta">
-            மத்திய வங்கி RCL எண்: ${rclNo} &nbsp;&nbsp;&nbsp;&nbsp; தேதி: ${formatDateDDMMYYYY(rclDate)}
+        <div class="print-meta" style="display: flex; justify-content: space-between; font-size: 11.5px; font-weight: bold; padding-bottom: 4px; border-bottom: 2px solid #000; margin-bottom: 6px;">
+            <div>மத்திய வங்கி RCL எண்: ${rclNo || '-'} &nbsp;&nbsp;&nbsp;&nbsp; தேதி: ${formatDateDDMMYYYY(rclDate) || '-'}</div>
+            <div>தீர்மான எண்: ${resNo || '-'} &nbsp;&nbsp;&nbsp;&nbsp; தீர்மான தேதி: ${formatDateDDMMYYYY(resDate) || '-'}</div>
+            <div>பட்டுவாடா தேதி: ${displayDisbDate}</div>
         </div>
 
         <table>
@@ -2126,8 +2204,12 @@
             return;
         }
 
-        const rclNo = safeSelect('disb-kcc-rcl-no').value.trim();
-        const rclDate = safeSelect('disb-kcc-rcl-date').value;
+        const rclNo = safeSelect('disb-kcc-rcl-no')?.value.trim() || '';
+        const rclDate = safeSelect('disb-kcc-rcl-date')?.value || '';
+        const resNo = safeSelect('disb-kcc-res-no')?.value.trim() || '';
+        const resDate = safeSelect('disb-kcc-res-date')?.value || '';
+        const rawDisbDate = safeSelect('disb-history-date-input')?.value || '';
+        const displayDisbDate = rawDisbDate ? formatDateDDMMYYYY(rawDisbDate) : '';
 
         // Create workbook
         const wb = XLSX.utils.book_new();
@@ -2135,7 +2217,7 @@
 
         ws_data.push(["T.U.3 தேவாரம் தொடக்க வேளாண்மை கூட்டுறவு கடன் சங்கம், தேவாரம்."]);
         ws_data.push(["KCC 2 - பயிர்க்கடன் பட்டுவாடா விபரம்"]);
-        ws_data.push([`மத்திய வங்கி RCL எண்: ${rclNo}     தேதி: ${formatDateDDMMYYYY(rclDate)}`]);
+        ws_data.push([`மத்திய வங்கி RCL எண்: ${rclNo}  தேதி: ${formatDateDDMMYYYY(rclDate)}`, "", "", "", "", `தீர்மானம் எண்: ${resNo}  தேதி: ${formatDateDDMMYYYY(resDate)}`, "", "", "", "", "", "", "", "", "", "", "", "", "", `பட்டுவாடா தேதி : ${displayDisbDate}`]);
         ws_data.push([]); // Spacing row
 
         const headerRow = [
@@ -2584,6 +2666,19 @@
             });
         }
 
+        // Form Dropdown Selection Handler
+        const selHistoryForm = safeSelect('sel-disb-history-form');
+        if (selHistoryForm && btnSync) {
+            selHistoryForm.addEventListener('change', () => {
+                const docType = selHistoryForm.value;
+                if (docType === 'KCC2') {
+                    btnSync.style.display = 'inline-flex';
+                } else {
+                    btnSync.style.display = 'none';
+                }
+            });
+        }
+
         // Print Handler for History Page
         if (btnPrint) {
             btnPrint.addEventListener('click', () => {
@@ -2591,7 +2686,55 @@
                     alert("அச்சிட உறுப்பினர்கள் யாரும் இல்லை!");
                     return;
                 }
-                printKcc2Html(activeHistoryBatch.members);
+
+                // Populate headers from active history batch if main inputs are empty
+                if (activeHistoryBatch.rcl_no && safeSelect('disb-kcc-rcl-no')) safeSelect('disb-kcc-rcl-no').value = activeHistoryBatch.rcl_no;
+                if (activeHistoryBatch.rcl_date && safeSelect('disb-kcc-rcl-date')) safeSelect('disb-kcc-rcl-date').value = activeHistoryBatch.rcl_date;
+                if (activeHistoryBatch.res_no && safeSelect('disb-kcc-res-no')) safeSelect('disb-kcc-res-no').value = activeHistoryBatch.res_no;
+                if (activeHistoryBatch.res_date && safeSelect('disb-kcc-res-date')) safeSelect('disb-kcc-res-date').value = activeHistoryBatch.res_date;
+
+                const docType = selHistoryForm ? selHistoryForm.value : "KCC2";
+
+                if (docType === "KCC1") {
+                    printKcc1Html(activeHistoryBatch.members);
+                } else if (docType === "KCC2") {
+                    printKcc2Html(activeHistoryBatch.members);
+                } else if (docType === "Cropwise") {
+                    printCropwiseHtml(activeHistoryBatch.members);
+                } else if (docType === "Insurance") {
+                    printInsuranceHtml(activeHistoryBatch.members);
+                } else if (docType === "Jabitha") {
+                    printJabithaHtml(activeHistoryBatch.members);
+                } else if (docType === "Sign Page") {
+                    printSignPageHtml(activeHistoryBatch.members);
+                } else {
+                    // Repost to Apps Script for Google Sheet prepared layouts
+                    const sheetUrl = getSheetUrl();
+                    if (!sheetUrl) {
+                        alert("கூகுள் சீட் URL அமைக்கப்படவில்லை!");
+                        return;
+                    }
+                    if (statusDiv) statusDiv.textContent = "⏳ அச்சுக்கோப்பு தயாராகிறது...";
+                    const payload = {
+                        action: "prepare_disbursement_print",
+                        doc_type: docType,
+                        headers: {
+                            rcl_no: activeHistoryBatch.rcl_no || "",
+                            rcl_date: activeHistoryBatch.rcl_date || "",
+                            res_no: activeHistoryBatch.res_no || "",
+                            res_date: activeHistoryBatch.res_date || ""
+                        },
+                        members: activeHistoryBatch.members
+                    };
+                    sendToGoogleSheet(sheetUrl, payload, (res) => {
+                        if (res && res.download_url) {
+                            window.open(res.download_url, '_blank');
+                            if (statusDiv) statusDiv.textContent = "✅ அச்சுக்கோப்பு தயாராக உள்ளது!";
+                        } else {
+                            if (statusDiv) statusDiv.textContent = "❌ அச்சுக்கோப்பு தயாரிப்பில் பிழை ஏற்பட்டுள்ளது.";
+                        }
+                    });
+                }
             });
         }
 
@@ -2602,7 +2745,54 @@
                     alert("பதிவிறக்க உறுப்பினர்கள் யாரும் இல்லை!");
                     return;
                 }
-                exportKcc2Excel(activeHistoryBatch.members);
+
+                // Populate headers from active history batch if main inputs are empty
+                if (activeHistoryBatch.rcl_no && safeSelect('disb-kcc-rcl-no')) safeSelect('disb-kcc-rcl-no').value = activeHistoryBatch.rcl_no;
+                if (activeHistoryBatch.rcl_date && safeSelect('disb-kcc-rcl-date')) safeSelect('disb-kcc-rcl-date').value = activeHistoryBatch.rcl_date;
+                if (activeHistoryBatch.res_no && safeSelect('disb-kcc-res-no')) safeSelect('disb-kcc-res-no').value = activeHistoryBatch.res_no;
+                if (activeHistoryBatch.res_date && safeSelect('disb-kcc-res-date')) safeSelect('disb-kcc-res-date').value = activeHistoryBatch.res_date;
+
+                const docType = selHistoryForm ? selHistoryForm.value : "KCC2";
+
+                if (docType === "KCC1") {
+                    exportKcc1Excel(activeHistoryBatch.members);
+                } else if (docType === "KCC2") {
+                    exportKcc2Excel(activeHistoryBatch.members);
+                } else if (docType === "Cropwise") {
+                    exportCropwiseExcel(activeHistoryBatch.members);
+                } else if (docType === "Insurance") {
+                    exportInsuranceExcel(activeHistoryBatch.members);
+                } else if (docType === "Jabitha") {
+                    exportJabithaExcel(activeHistoryBatch.members);
+                } else if (docType === "Sign Page") {
+                    exportSignPageExcel(activeHistoryBatch.members);
+                } else {
+                    const sheetUrl = getSheetUrl();
+                    if (!sheetUrl) {
+                        alert("கூகுள் சீட் URL அமைக்கப்படவில்லை!");
+                        return;
+                    }
+                    if (statusDiv) statusDiv.textContent = "⏳ எக்செல் தயாரிப்பில் உள்ளது...";
+                    const payload = {
+                        action: "prepare_disbursement_print",
+                        doc_type: docType,
+                        headers: {
+                            rcl_no: activeHistoryBatch.rcl_no || "",
+                            rcl_date: activeHistoryBatch.rcl_date || "",
+                            res_no: activeHistoryBatch.res_no || "",
+                            res_date: activeHistoryBatch.res_date || ""
+                        },
+                        members: activeHistoryBatch.members
+                    };
+                    sendToGoogleSheet(sheetUrl, payload, (res) => {
+                        if (res && res.download_url) {
+                            window.open(res.download_url, '_blank');
+                            if (statusDiv) statusDiv.textContent = "✅ எக்செல் கோப்பு பதிவிறக்கம் செய்யப்பட்டது!";
+                        } else {
+                            if (statusDiv) statusDiv.textContent = "❌ எக்செல் தயாரிப்பில் பிழை ஏற்பட்டுள்ளது.";
+                        }
+                    });
+                }
             });
         }
     }
@@ -3114,6 +3304,1081 @@
 
         XLSX.utils.book_append_sheet(wb, ws, "Cropwise Summary");
         XLSX.writeFile(wb, `Cropwise_Summary_${rclNo.replace(/\//g, '-')}.xlsx`);
+    }
+
+    /* ==========================================================================
+       INSURANCE SUMMARY PRINT & EXCEL ENGINE
+       ========================================================================== */
+    function printInsuranceHtml(members) {
+        if (!members || members.length === 0) {
+            alert("பட்டியலில் உறுப்பினர்கள் யாரும் இல்லை!");
+            return;
+        }
+
+        const rclNo = safeSelect('disb-kcc-rcl-no')?.value.trim() || '';
+        const rclDate = safeSelect('disb-kcc-rcl-date')?.value || '';
+
+        // Open print window
+        const w = window.open('', '_blank');
+        if (!w) {
+            alert("Popup blocker தடுத்துள்ளது! தயவுசெய்து Popups அனுமதித்து மீண்டும் முயற்சிக்கவும்.");
+            return;
+        }
+
+        let totalInsurance = 0;
+        let rowsHtml = "";
+
+        members.forEach((m, idx) => {
+            const masterM = typeof findMember === 'function' ? findMember(m.aclass) : null;
+
+            const sb = m.sb || m.sb_no || (masterM ? getFuzzyValue(masterM, ['sb', 'sb_account', 'சேமிப்பு எண்']) : '') || '';
+            const erp = m.erp || m.erp_no || (masterM ? getFuzzyValue(masterM, ['erp', 'erp_no']) : '') || '';
+            const name = m.name || (masterM ? getFuzzyValue(masterM, ['name', 'பெயர்']) : '') || '';
+            const fatherName = m.father_name || m.husband_name || (masterM ? getFuzzyValue(masterM, ['c/o', 'co', 'c_o', 'care_of', 'father', 'father_name', 'husband', 'தகப்பனார்', 'கணவர்']) : '') || '';
+            const village = m.village || m.address || (masterM ? getFuzzyValue(masterM, ['village', 'address', 'கிராமம்', 'முகவரி']) : '') || '';
+            const ration = m.ration || m.smart_card || (masterM ? getFuzzyValue(masterM, ['ration', 'smart_card', 'குடும்ப அட்டை']) : '') || '';
+            const disability = m.disability || (masterM ? getFuzzyValue(masterM, ['disability', 'குறைபாடு']) : '0') || '0';
+            const nomineeName = m.nominee_name || (masterM ? getFuzzyValue(masterM, ['namini', 'nominee', 'nominee_name', 'நாமினி']) : '') || '';
+            const nomineeRelation = m.nominee_relation || (masterM ? getFuzzyValue(masterM, ['relation', 'nominee_relation', 'உறவு', 'உறவுமுறை']) : '') || '';
+            const insurance = parseFloat(String(m.insurance || '0').replace(/,/g, '')) || 0;
+
+            totalInsurance += insurance;
+
+            rowsHtml += `
+                <tr>
+                    <td style="text-align: center;">${idx + 1}</td>
+                    <td style="text-align: center; font-weight: bold;">${m.aclass || ''}</td>
+                    <td style="text-align: center;">${sb}</td>
+                    <td style="text-align: center;">${erp}</td>
+                    <td style="text-align: left; font-weight: bold;">${name}</td>
+                    <td style="text-align: left;">${fatherName}</td>
+                    <td style="text-align: left;">${village}</td>
+                    <td style="text-align: center;">${ration}</td>
+                    <td style="text-align: center;">${disability}</td>
+                    <td style="text-align: left;">${nomineeName}</td>
+                    <td style="text-align: center;">${nomineeRelation}</td>
+                    <td style="text-align: right; font-weight: bold;">${insurance > 0 ? insurance.toLocaleString('en-IN') : '0'}</td>
+                </tr>
+            `;
+        });
+
+        const html = `
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+    <meta charset="UTF-8">
+    <title>காப்பீடு விவரம் - T.U.3 தேவாரம்</title>
+    <style>
+        @page {
+            size: A4 landscape;
+            margin: 8mm;
+        }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 9.5pt;
+            color: #000;
+            margin: 0;
+            padding: 5px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 12px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 6px;
+        }
+        .header h2 {
+            margin: 0 0 4px 0;
+            font-size: 15pt;
+        }
+        .header h3 {
+            margin: 0 0 4px 0;
+            font-size: 13pt;
+        }
+        .header h4 {
+            margin: 0;
+            font-size: 11pt;
+            font-weight: normal;
+            color: #333;
+        }
+        .header-letter {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 10pt;
+            line-height: 1.5;
+            padding: 0 40px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+        th, td {
+            border: 1px solid #000;
+            padding: 4px 5px;
+            font-size: 9pt;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+            text-align: center;
+            vertical-align: middle;
+        }
+        .signature-block {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 35px;
+            padding-right: 30px;
+            font-weight: bold;
+            font-size: 10pt;
+        }
+        .signature-box {
+            text-align: center;
+            width: 200px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h2>T.U.3 தேவாரம் தொடக்க வேளாண்மை கூட்டுறவு கடன் சங்கம், தேவாரம்.</h2>
+        <h3>பயிர்க்கடன் பட்டுவாடா விபரம்</h3>
+        <h4>(காசுகடன் KCC - உறுப்பினர்கள் விபத்துக் காப்பீடு விவரம்)</h4>
+    </div>
+
+    <!-- From / To Letter Section -->
+    <div class="header-letter">
+        <div style="padding-left: 20px;">
+            <strong>அனுப்புநர்</strong><br>
+            <div style="padding-left: 15px;">
+                செயலாளர்<br>
+                TU3 தேவாரம் PACCS<br>
+                தேவாரம்
+            </div>
+        </div>
+        <div style="padding-right: 20px;">
+            <strong>பெறுநர்</strong><br>
+            <div style="padding-left: 15px;">
+                கிளை மேலாளர் அவர்கள்<br>
+                மதுரை மாவட்ட மத்திய கூட்டுறவு வங்கி,<br>
+                தேவாரம் கிளை
+            </div>
+        </div>
+    </div>
+
+    <!-- RCL Metadata Line -->
+    <div style="text-align: center; font-weight: bold; font-size: 10.5pt; margin-bottom: 12px;">
+        RCL எண்: ${rclNo || '-'} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; தேதி: ${formatDateDDMMYYYY(rclDate) || '-'}
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th rowspan="2" style="width: 35px;">வ.எண்</th>
+                <th colspan="4">உறுப்பினர்</th>
+                <th rowspan="2">தகப்பனார்/ கணவர் பெயர்</th>
+                <th rowspan="2">கிராமம்</th>
+                <th rowspan="2">குடும்ப அட்டை எண்</th>
+                <th rowspan="2" style="width: 65px;">உடலில் உள்ள குறைபாடு</th>
+                <th rowspan="2">நாமினியின் பெயர்</th>
+                <th rowspan="2">உறவு</th>
+                <th rowspan="2" style="width: 75px;">சந்தாத் தொகை</th>
+            </tr>
+            <tr>
+                <th style="width: 55px;">எண்</th>
+                <th style="width: 65px;">சேமிப்பு எண்</th>
+                <th style="width: 55px;">ERP</th>
+                <th>பெயர்</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${rowsHtml}
+            <tr style="font-weight: bold; background-color: #f9f9f9;">
+                <td colspan="11" style="text-align: center;">மொத்தம்</td>
+                <td style="text-align: right;">${totalInsurance > 0 ? totalInsurance.toLocaleString('en-IN') : '0'}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="signature-block">
+        <div class="signature-box">
+            <br><br>
+            செயலாளர்
+        </div>
+    </div>
+
+    <script>
+        window.onload = function() {
+            window.print();
+        };
+    </script>
+</body>
+</html>
+        `;
+
+        w.document.write(html);
+        w.document.close();
+    }
+
+    function exportInsuranceExcel(members) {
+        if (!members || members.length === 0) {
+            alert("பதிவிறக்க உறுப்பினர்கள் யாரும் இல்லை!");
+            return;
+        }
+
+        const rclNo = safeSelect('disb-kcc-rcl-no')?.value.trim() || '';
+        const rclDate = safeSelect('disb-kcc-rcl-date')?.value || '';
+
+        const dataRows = [
+            ["அனுப்புநர்", "", "", "", "", "", "", "", "", "", "பெறுநர்", "", ""],
+            ["செயலாளர்\nTU3 தேவாரம் PACCS\nதேவாரம்", "", "", "", "", "", "", "", "", "", "கிளை மேலாளர் அவர்கள்\nமதுரை மாவட்ட மத்திய கூட்டுறவு வங்கி, \nதேவாரம் கிளை", "", ""],
+            [],
+            [],
+            [],
+            [],
+            [],
+            ["காசுகடன் KCC - உறுப்பினர்கள் விபத்துக் காப்பீடு விவரம்"],
+            ["வ எண்", "உறுப்பினர்", "", "", "", "தகப்பனார்/ கணவர் பெயர்", "கிராமம்", "குடும்ப அட்டை எண்", "உடலில் உள்ள குறைபாடு", "நாமினியின் பெயர்", "உறவு", "சந்தாத் தொகை"],
+            ["", "எண்", "சேமிப்பு எண்", "ERP", "பெயர்", "", "", "", "", "", "", ""]
+        ];
+
+        let totalInsurance = 0;
+        members.forEach((m, idx) => {
+            const masterM = typeof findMember === 'function' ? findMember(m.aclass) : null;
+
+            const sb = m.sb || m.sb_no || (masterM ? getFuzzyValue(masterM, ['sb', 'sb_account', 'சேமிப்பு எண்']) : '') || '';
+            const erp = m.erp || m.erp_no || (masterM ? getFuzzyValue(masterM, ['erp', 'erp_no']) : '') || '';
+            const name = m.name || (masterM ? getFuzzyValue(masterM, ['name', 'பெயர்']) : '') || '';
+            const fatherName = m.father_name || m.husband_name || (masterM ? getFuzzyValue(masterM, ['father', 'father_name', 'husband', 'தகப்பனார்', 'கணவர்']) : '') || '';
+            const village = m.village || m.address || (masterM ? getFuzzyValue(masterM, ['village', 'address', 'கிராமம்', 'முகவரி']) : '') || '';
+            const ration = m.ration || m.smart_card || (masterM ? getFuzzyValue(masterM, ['ration', 'smart_card', 'குடும்ப அட்டை']) : '') || '';
+            const disability = m.disability || (masterM ? getFuzzyValue(masterM, ['disability', 'குறைபாடு']) : '0') || '0';
+            const nomineeName = m.nominee_name || (masterM ? getFuzzyValue(masterM, ['nominee', 'nominee_name', 'நாமினி']) : '') || '';
+            const nomineeRelation = m.nominee_relation || (masterM ? getFuzzyValue(masterM, ['nominee_relation', 'relation', 'உறவு']) : '') || '';
+            const insurance = parseFloat(String(m.insurance || '0').replace(/,/g, '')) || 0;
+
+            totalInsurance += insurance;
+
+            dataRows.push([
+                idx + 1,
+                m.aclass || '',
+                sb,
+                erp,
+                name,
+                fatherName,
+                village,
+                ration,
+                disability,
+                nomineeName,
+                nomineeRelation,
+                insurance
+            ]);
+        });
+
+        // Totals row
+        dataRows.push([
+            "மொத்தம்",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            totalInsurance
+        ]);
+
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet(dataRows);
+
+        ws['!merges'] = [
+            { s: { r: 1, c: 0 }, e: { r: 1, c: 9 } },
+            { s: { r: 1, c: 10 }, e: { r: 1, c: 11 } },
+            { s: { r: 7, c: 0 }, e: { r: 7, c: 11 } },
+            { s: { r: 8, c: 1 }, e: { r: 8, c: 4 } },
+            { s: { r: 8, c: 0 }, e: { r: 9, c: 0 } },
+            { s: { r: 8, c: 5 }, e: { r: 9, c: 5 } },
+            { s: { r: 8, c: 6 }, e: { r: 9, c: 6 } },
+            { s: { r: 8, c: 7 }, e: { r: 9, c: 7 } },
+            { s: { r: 8, c: 8 }, e: { r: 9, c: 8 } },
+            { s: { r: 8, c: 9 }, e: { r: 9, c: 9 } },
+            { s: { r: 8, c: 10 }, e: { r: 9, c: 10 } },
+            { s: { r: 8, c: 11 }, e: { r: 9, c: 11 } },
+            { s: { r: dataRows.length - 1, c: 0 }, e: { r: dataRows.length - 1, c: 10 } }
+        ];
+
+        ws['!cols'] = [
+            { wch: 8 },  // வ.எண்
+            { wch: 12 }, // உறுப்பினர் எண்
+            { wch: 14 }, // சேமிப்பு எண்
+            { wch: 12 }, // ERP
+            { wch: 22 }, // பெயர்
+            { wch: 22 }, // தகப்பனார்/கணவர் பெயர்
+            { wch: 18 }, // கிராமம்
+            { wch: 18 }, // குடும்ப அட்டை எண்
+            { wch: 14 }, // குறைபாடு
+            { wch: 20 }, // நாமினி பெயர்
+            { wch: 14 }, // உறவு
+            { wch: 14 }  // சந்தாத் தொகை
+        ];
+
+        XLSX.utils.book_append_sheet(wb, ws, "Insurance Summary");
+        XLSX.writeFile(wb, `Insurance_${rclNo.replace(/\//g, '-')}.xlsx`);
+    }
+
+    /* ==========================================================================
+       JABITHA SUMMARY PRINT & EXCEL ENGINE
+       ========================================================================== */
+    function printJabithaHtml(members) {
+        if (!members || members.length === 0) {
+            alert("பட்டியலில் உறுப்பினர்கள் யாரும் இல்லை!");
+            return;
+        }
+
+        const rclNo = safeSelect('disb-kcc-rcl-no')?.value.trim() || '';
+        const rclDate = safeSelect('disb-kcc-rcl-date')?.value || '';
+        const rawDisbDate = safeSelect('disb-history-date-input')?.value || '';
+        const displayDisbDate = rawDisbDate ? formatDateDDMMYYYY(rawDisbDate) : '____________________';
+
+        // Open print window
+        const w = window.open('', '_blank');
+        if (!w) {
+            alert("Popup blocker தடுத்துள்ளது! தயவுசெய்து Popups அனுமதித்து மீண்டும் முயற்சிக்கவும்.");
+            return;
+        }
+
+        let totalArea = 0;
+        let totalSeed = 0;
+        let totalFert = 0;
+        let totalCompost = 0;
+        let totalPest = 0;
+        let totalCash = 0;
+        let totalAmount = 0;
+
+        let rowsHtml = "";
+
+        members.forEach((m, idx) => {
+            const masterM = typeof findMember === 'function' ? findMember(m.aclass) : null;
+
+            const sb = m.sb || m.sb_no || (masterM ? getFuzzyValue(masterM, ['sb', 'sb_account', 'சேமிப்பு எண்']) : '') || '';
+            const erp = m.erp || m.erp_no || (masterM ? getFuzzyValue(masterM, ['erp', 'erp_no']) : '') || '';
+            const name = m.name || (masterM ? getFuzzyValue(masterM, ['name', 'பெயர்']) : '') || '';
+            const surveyNo = m.survey_no || m.survey || (masterM ? getFuzzyValue(masterM, ['survey', 'survey_no', 'சர்வே']) : '') || '';
+            const area = parseFloat(String(m.area || '0')) || 0;
+            const crop = m.crop || (masterM ? getFuzzyValue(masterM, ['crop', 'பயிர்']) : '') || '';
+
+            const seed = parseFloat(String(m.seed || '0').replace(/,/g, '')) || 0;
+            const fert = parseFloat(String(m.fertilizer || '0').replace(/,/g, '')) || 0;
+            const compost = parseFloat(String(m.compost || '0').replace(/,/g, '')) || 0;
+            const pest = parseFloat(String(m.pesticide || '0').replace(/,/g, '')) || 0;
+            const cash = parseFloat(String(m.cash || '0').replace(/,/g, '')) || 0;
+            const amount = parseFloat(String(m.amount || '0').replace(/,/g, '')) || 0;
+
+            totalArea += area;
+            totalSeed += seed;
+            totalFert += fert;
+            totalCompost += compost;
+            totalPest += pest;
+            totalCash += cash;
+            totalAmount += amount;
+
+            rowsHtml += `
+                <tr>
+                    <td style="text-align: center;">${idx + 1}</td>
+                    <td style="text-align: center; font-weight: bold;">${m.aclass || ''}</td>
+                    <td style="text-align: center;">${sb}</td>
+                    <td style="text-align: center;">${erp}</td>
+                    <td style="text-align: left; font-weight: bold;">${name}</td>
+                    <td style="text-align: center;">${surveyNo}</td>
+                    <td style="text-align: center;">${area.toFixed(2)}</td>
+                    <td style="text-align: left;">${crop}</td>
+                    <td style="text-align: right;">${seed > 0 ? seed.toLocaleString('en-IN') : '0'}</td>
+                    <td style="text-align: right;">${fert > 0 ? fert.toLocaleString('en-IN') : '0'}</td>
+                    <td style="text-align: right;">${compost > 0 ? compost.toLocaleString('en-IN') : '0'}</td>
+                    <td style="text-align: right;">${pest > 0 ? pest.toLocaleString('en-IN') : '0'}</td>
+                    <td style="text-align: right;">${cash > 0 ? cash.toLocaleString('en-IN') : '0'}</td>
+                    <td style="text-align: right; font-weight: bold;">${amount.toLocaleString('en-IN')}</td>
+                    <td style="text-align: center; width: 150px;"></td>
+                </tr>
+            `;
+        });
+
+        const html = `
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+    <meta charset="UTF-8">
+    <title>ஜாபிதா விபரம் - T.U.3 தேவாரம்</title>
+    <style>
+        @page {
+            size: legal landscape;
+            margin: 8mm;
+        }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 9.5pt;
+            color: #000;
+            margin: 0;
+            padding: 5px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 8px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 4px;
+        }
+        .header h2 {
+            margin: 0 0 3px 0;
+            font-size: 15pt;
+        }
+        .header h3 {
+            margin: 0;
+            font-size: 13pt;
+        }
+        .meta-line {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-weight: bold;
+            font-size: 10pt;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+        th, td {
+            border: 1px solid #000;
+            padding: 4px 5px;
+            font-size: 9pt;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+            text-align: center;
+            vertical-align: middle;
+        }
+        .signature-block {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 35px;
+            padding: 0 20px;
+            font-weight: bold;
+            font-size: 10pt;
+        }
+        .signature-box {
+            text-align: center;
+            width: 200px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h2>T.U.3 தேவாரம் தொடக்க வேளாண்மை கூட்டுறவு கடன் சங்கம், தேவாரம்.</h2>
+        <h3>பயிர்க்கடன் பட்டுவாடா - ஜாபிதா விபரம்</h3>
+    </div>
+
+    <div class="meta-line">
+        <div>மத்திய வங்கி RCL எண்: ${rclNo || '-'} &nbsp;&nbsp;&nbsp;&nbsp; தேதி: ${formatDateDDMMYYYY(rclDate) || '-'}</div>
+        <div>பட்டுவாடா தேதி: ${displayDisbDate}</div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 35px;">வ.எண்</th>
+                <th style="width: 55px;">அ.எண்</th>
+                <th style="width: 65px;">SB</th>
+                <th style="width: 55px;">ERP</th>
+                <th>பெயர்</th>
+                <th style="width: 65px;">சர்வே எண்</th>
+                <th style="width: 55px;">பரப்பு.செ</th>
+                <th style="width: 70px;">பயிர்</th>
+                <th style="width: 65px;">விதை பகுதி</th>
+                <th style="width: 75px;">இரசாயன உரம் 50%</th>
+                <th style="width: 70px;">தொழுஉரம் 50%</th>
+                <th style="width: 70px;">பூச்சி மருந்து</th>
+                <th style="width: 70px;">ரொக்கம்</th>
+                <th style="width: 80px;">மொத்தம்</th>
+                <th style="width: 150px;">கையொப்பம்</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${rowsHtml}
+            <tr style="font-weight: bold; background-color: #f9f9f9;">
+                <td colspan="6" style="text-align: center;">மொத்தம்</td>
+                <td style="text-align: center;">${totalArea.toFixed(2)}</td>
+                <td></td>
+                <td style="text-align: right;">${totalSeed > 0 ? totalSeed.toLocaleString('en-IN') : '0'}</td>
+                <td style="text-align: right;">${totalFert > 0 ? totalFert.toLocaleString('en-IN') : '0'}</td>
+                <td style="text-align: right;">${totalCompost > 0 ? totalCompost.toLocaleString('en-IN') : '0'}</td>
+                <td style="text-align: right;">${totalPest > 0 ? totalPest.toLocaleString('en-IN') : '0'}</td>
+                <td style="text-align: right;">${totalCash > 0 ? totalCash.toLocaleString('en-IN') : '0'}</td>
+                <td style="text-align: right;">${totalAmount.toLocaleString('en-IN')}</td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="signature-block">
+        <div class="signature-box">
+            <br><br>
+            செயலாளர்
+        </div>
+        <div class="signature-box">
+            <br><br>
+            செயலாட்சியர்
+        </div>
+        <div class="signature-box">
+            <br><br>
+            சரக மேற்பார்வையாளர்
+        </div>
+    </div>
+
+    <script>
+        window.onload = function() {
+            window.print();
+        };
+    </script>
+</body>
+</html>
+        `;
+
+        w.document.write(html);
+        w.document.close();
+    }
+
+    function exportJabithaExcel(members) {
+        if (!members || members.length === 0) {
+            alert("பதிவிறக்க உறுப்பினர்கள் யாரும் இல்லை!");
+            return;
+        }
+
+        const rclNo = safeSelect('disb-kcc-rcl-no')?.value.trim() || '';
+        const rclDate = safeSelect('disb-kcc-rcl-date')?.value || '';
+        const disbDate = safeSelect('disb-history-date-input')?.value || safeSelect('disb-kcc-rcl-date')?.value || '';
+
+        const dataRows = [
+            ["T.U.3 தேவாரம் தொடக்க வேளாண்மை கூட்டுறவு கடன் சங்கம், தேவாரம்."],
+            [`ஜாபிதா விபரம்`, ``, ``, ``, `மத்திய வங்கி RCL எண்: ${rclNo}  தேதி: ${formatDateDDMMYYYY(rclDate)}`, ``, ``, ``, ``, ``, ``, ``, `பட்டுவாடா தேதி : ${formatDateDDMMYYYY(disbDate)}`],
+            ["வ.எண்", "அ.எண்", "SB", "ERP", "பெயர்", "சர்வே எண்", "பரப்பு.செ", "பயிர்", "விதை பகுதி", "இரசாயன உரம் 50%", "தொழுஉரம் 50%", "பூச்சி மருந்து", "ரொக்கம்", "மொத்தம்", "கையொப்பம்"]
+        ];
+
+        let totalArea = 0;
+        let totalSeed = 0;
+        let totalFert = 0;
+        let totalCompost = 0;
+        let totalPest = 0;
+        let totalCash = 0;
+        let totalAmount = 0;
+
+        members.forEach((m, idx) => {
+            const masterM = typeof findMember === 'function' ? findMember(m.aclass) : null;
+
+            const sb = m.sb || m.sb_no || (masterM ? getFuzzyValue(masterM, ['sb', 'sb_account', 'சேமிப்பு எண்']) : '') || '';
+            const erp = m.erp || m.erp_no || (masterM ? getFuzzyValue(masterM, ['erp', 'erp_no']) : '') || '';
+            const name = m.name || (masterM ? getFuzzyValue(masterM, ['name', 'பெயர்']) : '') || '';
+            const surveyNo = m.survey_no || m.survey || (masterM ? getFuzzyValue(masterM, ['survey', 'survey_no', 'சர்வே']) : '') || '';
+            const area = parseFloat(String(m.area || '0')) || 0;
+            const crop = m.crop || (masterM ? getFuzzyValue(masterM, ['crop', 'பயிர்']) : '') || '';
+
+            const seed = parseFloat(String(m.seed || '0').replace(/,/g, '')) || 0;
+            const fert = parseFloat(String(m.fertilizer || '0').replace(/,/g, '')) || 0;
+            const compost = parseFloat(String(m.compost || '0').replace(/,/g, '')) || 0;
+            const pest = parseFloat(String(m.pesticide || '0').replace(/,/g, '')) || 0;
+            const cash = parseFloat(String(m.cash || '0').replace(/,/g, '')) || 0;
+            const amount = parseFloat(String(m.amount || '0').replace(/,/g, '')) || 0;
+
+            totalArea += area;
+            totalSeed += seed;
+            totalFert += fert;
+            totalCompost += compost;
+            totalPest += pest;
+            totalCash += cash;
+            totalAmount += amount;
+
+            dataRows.push([
+                idx + 1,
+                m.aclass || '',
+                sb,
+                erp,
+                name,
+                surveyNo,
+                area,
+                crop,
+                seed,
+                fert,
+                compost,
+                pest,
+                cash,
+                amount,
+                ""
+            ]);
+        });
+
+        // Totals row
+        dataRows.push([
+            "மொத்தம்",
+            "",
+            "",
+            "",
+            "",
+            "",
+            totalArea,
+            "",
+            totalSeed,
+            totalFert,
+            totalCompost,
+            totalPest,
+            totalCash,
+            totalAmount,
+            ""
+        ]);
+
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet(dataRows);
+
+        ws['!merges'] = [
+            { s: { r: 0, c: 0 }, e: { r: 0, c: 14 } },
+            { s: { r: dataRows.length - 1, c: 0 }, e: { r: dataRows.length - 1, c: 5 } }
+        ];
+
+        ws['!cols'] = [
+            { wch: 8 },  // வ.எண்
+            { wch: 12 }, // அ.எண்
+            { wch: 14 }, // SB
+            { wch: 12 }, // ERP
+            { wch: 22 }, // பெயர்
+            { wch: 14 }, // சர்வே எண்
+            { wch: 12 }, // பரப்பு.செ
+            { wch: 16 }, // பயிர்
+            { wch: 14 }, // விதை பகுதி
+            { wch: 16 }, // இரசாயன உரம் 50%
+            { wch: 14 }, // தொழுஉரம் 50%
+            { wch: 14 }, // பூச்சி மருந்து
+            { wch: 14 }, // ரொக்கம்
+            { wch: 16 }, // மொத்தம்
+            { wch: 25 }  // கையொப்பம்
+        ];
+
+        XLSX.utils.book_append_sheet(wb, ws, "Jabitha Summary");
+        XLSX.writeFile(wb, `Jabitha_${rclNo.replace(/\//g, '-')}.xlsx`);
+    }
+
+    /* ==========================================================================
+       SIGN PAGE SUMMARY PRINT & EXCEL ENGINE
+       ========================================================================== */
+    function printSignPageHtml(members) {
+        if (!members || members.length === 0) {
+            alert("பட்டியலில் உறுப்பினர்கள் யாரும் இல்லை!");
+            return;
+        }
+
+        const rclNo = safeSelect('disb-kcc-rcl-no')?.value.trim() || '';
+        const rclDate = safeSelect('disb-kcc-rcl-date')?.value || '';
+        const resNo = safeSelect('disb-kcc-res-no')?.value.trim() || '';
+        const resDate = safeSelect('disb-kcc-res-date')?.value || '';
+        const rawDisbDate = safeSelect('disb-history-date-input')?.value || '';
+        const displayDisbDate = rawDisbDate ? formatDateDDMMYYYY(rawDisbDate) : '____________________';
+
+        // Open print window
+        const w = window.open('', '_blank');
+        if (!w) {
+            alert("Popup blocker தடுத்துள்ளது! தயவுசெய்து Popups அனுமதித்து மீண்டும் முயற்சிக்கவும்.");
+            return;
+        }
+
+        let totalArea = 0;
+        let totalSeed = 0;
+        let totalFert = 0;
+        let totalCompost = 0;
+        let totalPest = 0;
+        let totalCash = 0;
+        let totalCurrentLoan = 0;
+        let totalBookFee = 0;
+        let totalInsurance = 0;
+        let totalShare = 0;
+        let totalDeductions = 0;
+        let totalNetDisb = 0;
+
+        let rowsHtml = "";
+
+        members.forEach((m, idx) => {
+            const masterM = typeof findMember === 'function' ? findMember(m.aclass) : null;
+
+            const sb = m.sb || m.sb_no || (masterM ? getFuzzyValue(masterM, ['sb', 'sb_account', 'சேமிப்பு எண்']) : '') || '';
+            const erp = m.erp || m.erp_no || (masterM ? getFuzzyValue(masterM, ['erp', 'erp_no']) : '') || '';
+            const name = m.name || (masterM ? getFuzzyValue(masterM, ['name', 'பெயர்']) : '') || '';
+            const surveyNo = m.survey_no || m.survey || (masterM ? getFuzzyValue(masterM, ['survey', 'survey_no', 'சர்வே']) : '') || '';
+            const area = parseFloat(String(m.area || '0')) || 0;
+            const crop = m.crop || (masterM ? getFuzzyValue(masterM, ['crop', 'பயிர்']) : '') || '';
+
+            const seed = parseFloat(String(m.seed || '0').replace(/,/g, '')) || 0;
+            const fert = parseFloat(String(m.fertilizer || '0').replace(/,/g, '')) || 0;
+            const compost = parseFloat(String(m.compost || '0').replace(/,/g, '')) || 0;
+            const pest = parseFloat(String(m.pesticide || '0').replace(/,/g, '')) || 0;
+            const cash = parseFloat(String(m.cash || '0').replace(/,/g, '')) || 0;
+            const totalLoan = parseFloat(String(m.amount || '0').replace(/,/g, '')) || 0;
+
+            const bookFee = parseFloat(String(m.book_fee || '0').replace(/,/g, '')) || 0;
+            const insurance = parseFloat(String(m.insurance || '0').replace(/,/g, '')) || 0;
+            const share = parseFloat(String(m.share_amount || '0').replace(/,/g, '')) || 0;
+            
+            const totDed = fert + bookFee + insurance + share;
+            const netDisb = totalLoan - totDed;
+
+            totalArea += area;
+            totalSeed += seed;
+            totalFert += fert;
+            totalCompost += compost;
+            totalPest += pest;
+            totalCash += cash;
+            totalCurrentLoan += totalLoan;
+
+            totalBookFee += bookFee;
+            totalInsurance += insurance;
+            totalShare += share;
+            totalDeductions += totDed;
+            totalNetDisb += netDisb;
+
+            rowsHtml += `
+                <tr>
+                    <td style="text-align: center;">${idx + 1}</td>
+                    <td style="text-align: center; font-weight: bold;">${m.aclass || ''}</td>
+                    <td style="text-align: center;">${sb}</td>
+                    <td style="text-align: center;">${erp}</td>
+                    <td style="text-align: left; font-weight: bold;">${name}</td>
+                    <td style="text-align: center;">${surveyNo}</td>
+                    <td style="text-align: center;">${area.toFixed(2)}</td>
+                    <td style="text-align: left;">${crop}</td>
+                    <td style="text-align: right;">${seed > 0 ? seed.toLocaleString('en-IN') : '0'}</td>
+                    <td style="text-align: right;">${fert > 0 ? fert.toLocaleString('en-IN') : '0'}</td>
+                    <td style="text-align: right;">${compost > 0 ? compost.toLocaleString('en-IN') : '0'}</td>
+                    <td style="text-align: right;">${pest > 0 ? pest.toLocaleString('en-IN') : '0'}</td>
+                    <td style="text-align: right;">${cash > 0 ? cash.toLocaleString('en-IN') : '0'}</td>
+                    <td style="text-align: right; font-weight: bold;">${totalLoan.toLocaleString('en-IN')}</td>
+                    <td style="text-align: right;">${bookFee > 0 ? bookFee.toLocaleString('en-IN') : '0'}</td>
+                    <td style="text-align: right;">${insurance > 0 ? insurance.toLocaleString('en-IN') : '0'}</td>
+                    <td style="text-align: right;">${share > 0 ? share.toLocaleString('en-IN') : '0'}</td>
+                    <td style="text-align: right; font-weight: bold;">${totDed.toLocaleString('en-IN')}</td>
+                    <td style="text-align: right; font-weight: bold;">${netDisb.toLocaleString('en-IN')}</td>
+                    <td style="text-align: center; width: 150px;"></td>
+                </tr>
+            `;
+        });
+
+        const html = `
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+    <meta charset="UTF-8">
+    <title>கையெழுத்துப் படிவம் - T.U.3 தேவாரம்</title>
+    <style>
+        @page {
+            size: legal landscape;
+            margin: 6mm;
+        }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 8.5pt;
+            color: #000;
+            margin: 0;
+            padding: 4px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 6px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 3px;
+        }
+        .header h2 {
+            margin: 0 0 2px 0;
+            font-size: 14pt;
+        }
+        .header h3 {
+            margin: 0;
+            font-size: 12pt;
+        }
+        .meta-line {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-weight: bold;
+            font-size: 9pt;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 12px;
+        }
+        th, td {
+            border: 1px solid #000;
+            padding: 3px 4px;
+            font-size: 8.5pt;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+            text-align: center;
+            vertical-align: middle;
+        }
+        .signature-block {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            padding: 0 20px;
+            font-weight: bold;
+            font-size: 9.5pt;
+        }
+        .signature-box {
+            text-align: center;
+            width: 180px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h2>T.U.3 தேவாரம் தொடக்க வேளாண்மை கூட்டுறவு கடன் சங்கம், தேவாரம்.</h2>
+        <h3>பயிர்க்கடன் பட்டுவாடா விபரம் (கையெழுத்துப் படிவம்)</h3>
+    </div>
+
+    <div class="meta-line">
+        <div>மத்திய வங்கி RCL எண்: ${rclNo || '-'} &nbsp;&nbsp;&nbsp;&nbsp; தேதி: ${formatDateDDMMYYYY(rclDate) || '-'}</div>
+        <div>தீர்மானம் எண்: ${resNo || '-'} &nbsp;&nbsp;&nbsp;&nbsp; தேதி: ${formatDateDDMMYYYY(resDate) || '-'}</div>
+        <div>பட்டுவாடா நபர்கள்: ${members.length}</div>
+        <div>பட்டுவாடா தேதி: ${displayDisbDate}</div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 25px;">வ.எண்</th>
+                <th style="width: 45px;">அ.எண்</th>
+                <th style="width: 50px;">SB</th>
+                <th style="width: 45px;">ERP</th>
+                <th>பெயர்</th>
+                <th style="width: 50px;">சர்வே எண்</th>
+                <th style="width: 40px;">பரப்பு</th>
+                <th style="width: 55px;">பயிர்</th>
+                <th style="width: 50px;">விதை பகுதி</th>
+                <th style="width: 55px;">இரசாயன உரம்</th>
+                <th style="width: 50px;">தொழு உரம்</th>
+                <th style="width: 50px;">பூச்சி மருந்து</th>
+                <th style="width: 55px;">ரொக்கம்</th>
+                <th style="width: 60px;">மொத்தம்</th>
+                <th style="width: 45px;">புத்தக பாரம்</th>
+                <th style="width: 45px;">காப்பீடு</th>
+                <th style="width: 45px;">பங்கு தொகை</th>
+                <th style="width: 60px;">மொத்த பிடித்தம்</th>
+                <th style="width: 65px;">நிகர பட்டுவாடா</th>
+                <th style="width: 150px;">கையொப்பம்</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${rowsHtml}
+            <tr style="font-weight: bold; background-color: #f9f9f9;">
+                <td colspan="6" style="text-align: center;">மொத்தம்</td>
+                <td style="text-align: center;">${totalArea.toFixed(2)}</td>
+                <td></td>
+                <td style="text-align: right;">${totalSeed > 0 ? totalSeed.toLocaleString('en-IN') : '0'}</td>
+                <td style="text-align: right;">${totalFert > 0 ? totalFert.toLocaleString('en-IN') : '0'}</td>
+                <td style="text-align: right;">${totalCompost > 0 ? totalCompost.toLocaleString('en-IN') : '0'}</td>
+                <td style="text-align: right;">${totalPest > 0 ? totalPest.toLocaleString('en-IN') : '0'}</td>
+                <td style="text-align: right;">${totalCash > 0 ? totalCash.toLocaleString('en-IN') : '0'}</td>
+                <td style="text-align: right;">${totalCurrentLoan.toLocaleString('en-IN')}</td>
+                <td style="text-align: right;">${totalBookFee > 0 ? totalBookFee.toLocaleString('en-IN') : '0'}</td>
+                <td style="text-align: right;">${totalInsurance > 0 ? totalInsurance.toLocaleString('en-IN') : '0'}</td>
+                <td style="text-align: right;">${totalShare > 0 ? totalShare.toLocaleString('en-IN') : '0'}</td>
+                <td style="text-align: right;">${totalDeductions.toLocaleString('en-IN')}</td>
+                <td style="text-align: right;">${totalNetDisb.toLocaleString('en-IN')}</td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="signature-block">
+        <div class="signature-box">
+            <br><br>
+            செயலாளர்
+        </div>
+        <div class="signature-box">
+            <br><br>
+            செயலாட்சியர்
+        </div>
+        <div class="signature-box">
+            <br><br>
+            சரக மேற்பார்வையாளர்
+        </div>
+    </div>
+
+    <script>
+        window.onload = function() {
+            window.print();
+        };
+    </script>
+</body>
+</html>
+        `;
+
+        w.document.write(html);
+        w.document.close();
+    }
+
+    function exportSignPageExcel(members) {
+        if (!members || members.length === 0) {
+            alert("பதிவிறக்க உறுப்பினர்கள் யாரும் இல்லை!");
+            return;
+        }
+
+        const rclNo = safeSelect('disb-kcc-rcl-no')?.value.trim() || '';
+        const rclDate = safeSelect('disb-kcc-rcl-date')?.value || '';
+        const resNo = safeSelect('disb-kcc-res-no')?.value.trim() || '';
+        const resDate = safeSelect('disb-kcc-res-date')?.value || '';
+        const rawDisbDate = safeSelect('disb-history-date-input')?.value || '';
+        const displayDisbDate = rawDisbDate ? formatDateDDMMYYYY(rawDisbDate) : '';
+
+        const dataRows = [
+            ["T.U.3 தேவாரம் தொடக்க வேளாண்மை கூட்டுறவு கடன் சங்கம், தேவாரம்."],
+            ["", "", "", "", "", "தீர்மானம் எண்", "", resNo, "", "", "", "", "", "", "தீர்மானம் தேதி", "", formatDateDDMMYYYY(resDate)],
+            [`மத்திய வங்கி RCL எண்: ${rclNo}  தேதி: ${formatDateDDMMYYYY(rclDate)}`, "", "", "", "", "", "", "", "", "", `பட்டுவாடா நபர்கள்: ${members.length}`, "", "", "", "", "", `பட்டுவாடா தேதி : ${displayDisbDate}`],
+            [],
+            ["வ.எண்", "அ.எண்", "SB", "ERP", "பெயர்", "சர்வே எண்", "பரப்பு", "பயிர்", "விதை பகுதி", "இரசாயன உரம்", "தொழு உரம்", "பூச்சி மருந்து", "ரொக்கம்", "மொத்தம்", "புத்தக பாரம்", "காப்பீடு", "பங்கு தொகை", "மொத்த பிடித்தம்", "நிகர பட்டுவாடா", "கையொப்பம்"]
+        ];
+
+        let totalArea = 0;
+        let totalSeed = 0;
+        let totalFert = 0;
+        let totalCompost = 0;
+        let totalPest = 0;
+        let totalCash = 0;
+        let totalCurrentLoan = 0;
+        let totalBookFee = 0;
+        let totalInsurance = 0;
+        let totalShare = 0;
+        let totalDeductions = 0;
+        let totalNetDisb = 0;
+
+        members.forEach((m, idx) => {
+            const masterM = typeof findMember === 'function' ? findMember(m.aclass) : null;
+
+            const sb = m.sb || m.sb_no || (masterM ? getFuzzyValue(masterM, ['sb', 'sb_account', 'சேமிப்பு எண்']) : '') || '';
+            const erp = m.erp || m.erp_no || (masterM ? getFuzzyValue(masterM, ['erp', 'erp_no']) : '') || '';
+            const name = m.name || (masterM ? getFuzzyValue(masterM, ['name', 'பெயர்']) : '') || '';
+            const surveyNo = m.survey_no || m.survey || (masterM ? getFuzzyValue(masterM, ['survey', 'survey_no', 'சர்வே']) : '') || '';
+            const area = parseFloat(String(m.area || '0')) || 0;
+            const crop = m.crop || (masterM ? getFuzzyValue(masterM, ['crop', 'பயிர்']) : '') || '';
+
+            const seed = parseFloat(String(m.seed || '0').replace(/,/g, '')) || 0;
+            const fert = parseFloat(String(m.fertilizer || '0').replace(/,/g, '')) || 0;
+            const compost = parseFloat(String(m.compost || '0').replace(/,/g, '')) || 0;
+            const pest = parseFloat(String(m.pesticide || '0').replace(/,/g, '')) || 0;
+            const cash = parseFloat(String(m.cash || '0').replace(/,/g, '')) || 0;
+            const totalLoan = parseFloat(String(m.amount || '0').replace(/,/g, '')) || 0;
+
+            const bookFee = parseFloat(String(m.book_fee || '0').replace(/,/g, '')) || 0;
+            const insurance = parseFloat(String(m.insurance || '0').replace(/,/g, '')) || 0;
+            const share = parseFloat(String(m.share_amount || '0').replace(/,/g, '')) || 0;
+
+            const totDed = fert + bookFee + insurance + share;
+            const netDisb = totalLoan - totDed;
+
+            totalArea += area;
+            totalSeed += seed;
+            totalFert += fert;
+            totalCompost += compost;
+            totalPest += pest;
+            totalCash += cash;
+            totalCurrentLoan += totalLoan;
+
+            totalBookFee += bookFee;
+            totalInsurance += insurance;
+            totalShare += share;
+            totalDeductions += totDed;
+            totalNetDisb += netDisb;
+
+            dataRows.push([
+                idx + 1,
+                m.aclass || '',
+                sb,
+                erp,
+                name,
+                surveyNo,
+                area,
+                crop,
+                seed,
+                fert,
+                compost,
+                pest,
+                cash,
+                totalLoan,
+                bookFee,
+                insurance,
+                share,
+                totDed,
+                netDisb,
+                ""
+            ]);
+        });
+
+        // Totals row
+        dataRows.push([
+            "மொத்தம்",
+            "",
+            "",
+            "",
+            "",
+            "",
+            totalArea,
+            "",
+            totalSeed,
+            totalFert,
+            totalCompost,
+            totalPest,
+            totalCash,
+            totalCurrentLoan,
+            totalBookFee,
+            totalInsurance,
+            totalShare,
+            totalDeductions,
+            totalNetDisb,
+            ""
+        ]);
+
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet(dataRows);
+
+        ws['!merges'] = [
+            { s: { r: 0, c: 0 }, e: { r: 0, c: 19 } },
+            { s: { r: dataRows.length - 1, c: 0 }, e: { r: dataRows.length - 1, c: 5 } }
+        ];
+
+        ws['!cols'] = [
+            { wch: 8 },  // வ.எண்
+            { wch: 12 }, // அ.எண்
+            { wch: 14 }, // SB
+            { wch: 12 }, // ERP
+            { wch: 22 }, // பெயர்
+            { wch: 14 }, // சர்வே எண்
+            { wch: 12 }, // பரப்பு
+            { wch: 16 }, // பயிர்
+            { wch: 14 }, // விதை பகுதி
+            { wch: 16 }, // இரசாயன உரம்
+            { wch: 14 }, // தொழு உரம்
+            { wch: 14 }, // பூச்சி மருந்து
+            { wch: 14 }, // ரொக்கம்
+            { wch: 16 }, // மொத்தம்
+            { wch: 14 }, // புத்தக பாரம்
+            { wch: 14 }, // காப்பீடு
+            { wch: 14 }, // பங்கு தொகை
+            { wch: 16 }, // மொத்த பிடித்தம்
+            { wch: 16 }, // நிகர பட்டுவாடா
+            { wch: 25 }  // கையொப்பம்
+        ];
+
+        XLSX.utils.book_append_sheet(wb, ws, "Sign Page Summary");
+        XLSX.writeFile(wb, `Sign_Page_${rclNo.replace(/\//g, '-')}.xlsx`);
     }
 
     // Initialization on page load

@@ -1501,14 +1501,14 @@
                                 <select id="sel-disb-kcc-form" class="search-input select-input full-width">
                                     <option value="KCC1">KCC 1 (Disbursement 1)</option>
                                     <option value="KCC2">KCC 2 (Disbursement 2)</option>
+                                    <option value="Cropwise">Cropwise (பயிர்வாரி சுருக்கம்)</option>
                                     <option value="Insurance">Insurance (பயிர்க் காப்பீடு)</option>
                                     <option value="Jabitha">Jabitha (ஜாபிதா பட்டியல்)</option>
                                     <option value="Sign Page">Sign Page (கையெழுத்துப் படிவம்)</option>
-                                    <option value="Bank Sheet">Bank Sheet (வங்கி தாள்)</option>
-                                    <option value="Cropwise">Cropwise (பயிர்வாரி சுருக்கம்)</option>
                                     <option value="Note Order">Note Order (அலுவலகக் குறிப்பு)</option>
-                                    <option value="Resolution">Resolution (தீர்மானம்)</option>
                                     <option value="KCC 7%">KCC 7% (வட்டி மானியம்)</option>
+                                    <option value="Resolution">Resolution (தீர்மானம்)</option>
+                                    <option value="Bank Sheet">Bank Sheet (வங்கி தாள்)</option>
                                 </select>
                             </div>
                             <button type="button" class="btn btn-primary" id="btn-disb-kcc-print" style="height: 42px;">
@@ -1580,39 +1580,36 @@
                     </div>
                 </div>
 
-                <!-- Save to Google Sheet Card (Below Table) -->
+                <!-- Save & Print Action Card -->
                 <div class="card margin-bottom-md" id="box-disb-history-save">
                     <div class="card-header" style="background-color: var(--primary-light);">
-                        <h3 class="text-primary font-bold">💾 கூகுள் சீட்டில் சேமித்தல் (All KCC Paduvada Members)</h3>
+                        <h3 class="text-primary font-bold">💾 பட்டுவாடா தேதி & அச்சு / சேமிப்பு (Disbursement Actions)</h3>
                     </div>
                     <div class="card-body">
                         <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end;">
-                            <div class="form-group" style="flex: 1; min-width: 200px;">
-                                <label class="form-label font-bold text-primary">பட்டுவாடா தேதி (Disbursement Date) *</label>
+                            <div class="form-group" style="flex: 1; min-width: 170px;">
+                                <label class="form-label font-bold text-primary">பட்டுவாடா தேதி *</label>
                                 <input type="date" id="disb-history-date-input" class="search-input full-width">
                             </div>
-                            <button type="button" class="btn btn-success" id="btn-disb-history-sync" style="height: 42px; padding: 0 30px; font-weight: bold; background-color: var(--success); color: white;">
-                                💾 சேமி (Google Sheet-ல் பதியவும்)
+                            <div class="form-group" style="flex: 1.5; min-width: 220px;">
+                                <label class="form-label font-bold text-primary">அச்சிட / பதிய வேண்டிய படிவம்</label>
+                                <select id="sel-disb-history-form" class="search-input select-input full-width">
+                                    <option value="KCC2" selected>KCC 2 (Disbursement 2)</option>
+                                    <option value="Jabitha">Jabitha (ஜாபிதா பட்டியல்)</option>
+                                    <option value="Sign Page">Sign Page (கையெழுத்துப் படிவம்)</option>
+                                </select>
+                            </div>
+                            <button type="button" class="btn btn-success" id="btn-disb-history-sync" style="height: 42px; padding: 0 25px; font-weight: bold; background-color: var(--success); color: white;">
+                                💾 சேமி (Google Sheet)
+                            </button>
+                            <button type="button" class="btn btn-primary" id="btn-disb-history-print" style="height: 42px; padding: 0 20px; font-weight: bold;">
+                                🖨️ PDF அச்சிடு
+                            </button>
+                            <button type="button" class="btn btn-secondary" id="btn-disb-history-excel" style="height: 42px; padding: 0 20px; font-weight: bold;">
+                                📊 Excel டவுன்லோடு
                             </button>
                         </div>
                         <div id="disb-history-status" class="margin-top-sm font-bold" style="min-height: 20px;"></div>
-                    </div>
-                </div>
-
-                <!-- Print & Export Action Card -->
-                <div class="card margin-bottom-md hidden" id="box-disb-history-actions">
-                    <div class="card-header" style="background-color: var(--bg-hover);">
-                        <h3 class="font-bold">🖨️ அச்சு மற்றும் பதிவிறக்கம்</h3>
-                    </div>
-                    <div class="card-body">
-                        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                            <button type="button" class="btn btn-primary" id="btn-disb-history-print" style="height: 42px;">
-                                PDF அச்சிடு (KCC 2)
-                            </button>
-                            <button type="button" class="btn btn-secondary" id="btn-disb-history-excel" style="height: 42px;">
-                                Excel (.xlsx) டவுன்லோடு
-                            </button>
-                        </div>
                     </div>
                 </div>
             </section>

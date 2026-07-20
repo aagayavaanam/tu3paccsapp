@@ -185,6 +185,12 @@
                                 </a>
                             </li>
                             <li class="submenu-item">
+                                <a href="#disbursement-history" class="submenu-link" id="link-disbursement-history">
+                                    <span class="dot"></span>
+                                    <span>பட்டுவாடா பதிவேடு</span>
+                                </a>
+                            </li>
+                            <li class="submenu-item">
                                 <a href="#disbursement-ah" class="submenu-link" id="link-disbursement-ah">
                                     <span class="dot"></span>
                                     <span>AH பட்டுவாடா</span>
@@ -1179,6 +1185,10 @@
                             <h4 class="font-bold text-primary margin-bottom-sm">பகுதி 1: தொகுதி விபரம் (Batch Details)</h4>
                             <div class="api-connect-form" style="display: flex; gap: 15px; flex-wrap: wrap;">
                                 <div class="form-group" style="flex: 1; min-width: 150px;">
+                                    <label class="form-label font-bold text-primary">பட்டுவாடா எண் (Disbursement No) *</label>
+                                    <input type="text" id="disb-kcc-disb-no" value="1" class="search-input full-width">
+                                </div>
+                                <div class="form-group" style="flex: 1; min-width: 150px;">
                                     <label class="form-label font-bold">RCL எண் *</label>
                                     <input type="text" id="disb-kcc-rcl-no" value="107/25-26/P1" class="search-input full-width">
                                 </div>
@@ -1507,6 +1517,104 @@
                             <button type="button" class="btn btn-secondary" id="btn-disb-kcc-excel" style="height: 42px;">
                                 Excel (.xlsx) டவுன்லோடு
                             </button>
+                            <button type="button" class="btn btn-success hidden" id="btn-disb-kcc-save-sheet" style="height: 42px; font-weight: bold; background-color: var(--success); color: white;">
+                                💾 சேமி (Google Sheet)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Page: Disbursement History / Query Register & Google Sheets Sync -->
+            <section id="page-disbursement-history" class="content-page">
+                <header class="content-header">
+                    <div>
+                        <h2 class="page-title">பட்டுவாடா பதிவேடு & கூகுள் சீட் சேமிப்பு (Disbursement Register)</h2>
+                        <p class="page-subtitle">பட்டுவாடா எண்ணை உள்ளீடு செய்து உறுப்பினர்களின் விபரங்களைப் பார்த்தல், தேதியை உள்ளிட்டு All KCC Paduvada Members கூகுள் சீட்டில் சேமித்தல்</p>
+                    </div>
+                </header>
+
+                <!-- Query Controls Card -->
+                <div class="card margin-bottom-md">
+                    <div class="card-header" style="background-color: var(--primary-light);">
+                        <h3 class="text-primary font-bold">🔍 பட்டுவாடா விபரம் தேடுதல்</h3>
+                    </div>
+                    <div class="card-body">
+                        <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end;">
+                            <div class="form-group" style="flex: 1; min-width: 200px;">
+                                <label class="form-label font-bold text-primary">பட்டுவாடா எண் (Disbursement No) *</label>
+                                <input type="text" id="disb-history-no-input" placeholder="உதாரணம்: 1" class="search-input full-width">
+                            </div>
+                            <button type="button" class="btn btn-primary" id="btn-disb-history-search" style="height: 42px; padding: 0 25px; font-weight: bold;">
+                                🔍 விபரம் காட்டு
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Table Card for Queried Batch -->
+                <div class="card margin-bottom-md">
+                    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                        <h3 class="text-primary font-bold">📋 பட்டுவாடா உறுப்பினர்கள் விபரம்</h3>
+                        <div>
+                            <span class="badge" style="background-color: var(--primary-light); color: var(--primary); padding: 5px 12px; font-weight: bold;" id="lbl-disb-history-count">0 உறுப்பினர்கள்</span>
+                        </div>
+                    </div>
+                    <div class="card-body" style="overflow-x: auto;">
+                        <table class="members-table" id="tbl-disb-history-members" style="width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th>வ.எண்</th>
+                                    <th>அ.எண்</th>
+                                    <th>பெயர்</th>
+                                    <th>பயிர்</th>
+                                    <th class="text-right">மொத்த கடன்</th>
+                                    <th class="text-right">மொத்த பிடித்தம்</th>
+                                    <th class="text-right">நிகர பட்டுவாடா</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="empty-row"><td colspan="7" class="text-center text-muted">பட்டுவாடா எண்ணை உள்ளீடு செய்து 'விபரம் காட்டு' அழுத்தவும்</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Save to Google Sheet Card (Below Table) -->
+                <div class="card margin-bottom-md" id="box-disb-history-save">
+                    <div class="card-header" style="background-color: var(--primary-light);">
+                        <h3 class="text-primary font-bold">💾 கூகுள் சீட்டில் சேமித்தல் (All KCC Paduvada Members)</h3>
+                    </div>
+                    <div class="card-body">
+                        <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end;">
+                            <div class="form-group" style="flex: 1; min-width: 200px;">
+                                <label class="form-label font-bold text-primary">பட்டுவாடா தேதி (Disbursement Date) *</label>
+                                <input type="date" id="disb-history-date-input" class="search-input full-width">
+                            </div>
+                            <button type="button" class="btn btn-success" id="btn-disb-history-sync" style="height: 42px; padding: 0 30px; font-weight: bold; background-color: var(--success); color: white;">
+                                💾 சேமி (Google Sheet-ல் பதியவும்)
+                            </button>
+                        </div>
+                        <div id="disb-history-status" class="margin-top-sm font-bold" style="min-height: 20px;"></div>
+                    </div>
+                </div>
+
+                <!-- Print & Export Action Card -->
+                <div class="card margin-bottom-md hidden" id="box-disb-history-actions">
+                    <div class="card-header" style="background-color: var(--bg-hover);">
+                        <h3 class="font-bold">🖨️ அச்சு மற்றும் பதிவிறக்கம்</h3>
+                    </div>
+                    <div class="card-body">
+                        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                            <button type="button" class="btn btn-primary" id="btn-disb-history-print" style="height: 42px;">
+                                PDF அச்சிடு (KCC 2)
+                            </button>
+                            <button type="button" class="btn btn-secondary" id="btn-disb-history-excel" style="height: 42px;">
+                                Excel (.xlsx) டவுன்லோடு
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </section>
 
             <!-- Page: AH Disbursement Builder -->

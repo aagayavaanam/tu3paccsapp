@@ -1005,9 +1005,7 @@ let currentSearchQuery = ""; // Store current search query
 async function fetchMembers() {
     if (!connectedSheetUrl) {
         updateStatusIndicator(false, currentLang === 'ta' ? "இணைக்கப்படவில்லை (உள்ளூர் மாக்கப் தரவு காட்டப்படுகிறது)" : "Not connected (Local mock data displayed)");
-        if (currentSearchQuery) {
-            performSearch();
-        }
+        if (currentSearchQuery) performSearch();
         renderDynamicAddMemberForm();
         return;
     }
@@ -1016,23 +1014,41 @@ async function fetchMembers() {
     
     try {
         const response = await fetch(connectedSheetUrl);
-        const data = await response.json();
-        if (Array.isArray(data)) {
+        const text = await response.text();
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch (e) {
+            console.error("JSON parse error from sheet:", e, text);
+            throw new Error("Invalid JSON from sheet");
+        }
+
+        if (Array.isArray(data) && data.length > 0) {
             localMembers = data;
-            updateStatusIndicator(true, currentLang === 'ta' ? "இணைக்கப்பட்டுள்ளது (Live Sync Enabled)" : "Connected (Live Sync Enabled)");
-            if (currentSearchQuery) {
-                performSearch();
-            }
+            localStorage.setItem('pacs_cached_master_members', JSON.stringify(data));
+            updateStatusIndicator(true, currentLang === 'ta' ? `இணைக்கப்பட்டுள்ளது (${data.length} உறுப்பினர்கள் ஏற்செய்யப்பட்டனர்)` : `Connected (${data.length} Members Loaded)`);
+            if (currentSearchQuery) performSearch();
             renderDynamicAddMemberForm();
+        } else if (Array.isArray(data) && data.length === 0) {
+            updateStatusIndicator(true, currentLang === 'ta' ? "இணைக்கப்பட்டுள்ளது (சீட்டில் உறுப்பினர்கள் தரவு இல்லை)" : "Connected (No rows in sheet)");
         } else {
-            throw new Error("Invalid data format received from Apps Script");
+            throw new Error("Invalid data format");
         }
     } catch (error) {
         console.error("Fetch error:", error);
-        updateStatusIndicator(false, currentLang === 'ta' ? "இணைப்புத் தோல்வி (வழிகாட்டிப் படிகளைச் சரிபார்க்கவும்)" : "Connection failed (Verify Apps Script setup)");
-        if (currentSearchQuery) {
-            performSearch();
+        // Check if we have cached members in localStorage
+        const cached = localStorage.getItem('pacs_cached_master_members');
+        if (cached) {
+            try {
+                localMembers = JSON.parse(cached);
+                updateStatusIndicator(true, currentLang === 'ta' ? `இணைக்கப்பட்டுள்ளது (${localMembers.length} உள்ளூர் உறுப்பினர்கள்)` : "Loaded Cached Local Members");
+            } catch (e) {
+                updateStatusIndicator(false, currentLang === 'ta' ? "இணைப்புத் தோல்வி (Apps Script அமைப்பைச் சரிபார்க்கவும்)" : "Connection failed (Verify Apps Script)");
+            }
+        } else {
+            updateStatusIndicator(false, currentLang === 'ta' ? "இணைப்புத் தோல்வி (Apps Script அமைப்பைச் சரிபார்க்கவும்)" : "Connection failed (Verify Apps Script)");
         }
+        if (currentSearchQuery) performSearch();
         renderDynamicAddMemberForm();
     }
 }
@@ -1057,6 +1073,11 @@ function setupGoogleSheetsSync() {
     const disconnectBtn = document.getElementById('btn-disconnect-sheet');
     
     if (!sheetUrlInput || !connectBtn || !disconnectBtn) return;
+    
+    // Auto-initialize default Google Sheet URL if not set
+    if (!localStorage.getItem('pacs_google_sheet_url')) {
+        localStorage.setItem('pacs_google_sheet_url', DEFAULT_GOOGLE_SHEET_URL);
+    }
     
     // Load from localStorage or fallback to default
     const savedUrl = localStorage.getItem('pacs_google_sheet_url') || DEFAULT_GOOGLE_SHEET_URL;
@@ -1378,12 +1399,34 @@ function setupPrintControllerModule() {
     
     // Helper: Lookup member details
     const findMember = (query) => {
-        if (!query) return null;
+        if (query === undefined || query === null || !localMembers || localMembers.length === 0) return null;
+        const queryStr = String(query).toLowerCase().trim();
+        if (!queryStr) return null;
+
+        const numOnlyQuery = queryStr.replace(/[^0-9]/g, '');
+
         return localMembers.find(m => {
-            const idVal = String(m[Object.keys(m)[0]] || '').toLowerCase();
-            const erpVal = String(m['SB ERP No'] || m['SB ERP எண்'] || '').toLowerCase();
-            const nameVal = String(m['Member Name'] || m['உறுப்பினர் பெயர்'] || '').toLowerCase();
-            return idVal.includes(query) || erpVal.includes(query) || nameVal.includes(query);
+            if (!m || typeof m !== 'object') return false;
+            const keys = Object.keys(m);
+            
+            for (let i = 0; i < keys.length; i++) {
+                const k = keys[i];
+                const rawVal = String(m[k] || '').toLowerCase().trim();
+                if (!rawVal) continue;
+
+                if (rawVal === queryStr) return true;
+
+                if (numOnlyQuery && numOnlyQuery.length >= 1) {
+                    const cellNumOnly = rawVal.replace(/[^0-9]/g, '');
+                    if (cellNumOnly === numOnlyQuery) return true;
+                }
+
+                const kl = k.toLowerCase();
+                if ((kl.includes('name') || kl.includes('பெயர்') || kl.includes('aclass') || kl.includes('a class') || kl.includes('அ')) && rawVal.includes(queryStr)) {
+                    return true;
+                }
+            }
+            return false;
         });
     };
     

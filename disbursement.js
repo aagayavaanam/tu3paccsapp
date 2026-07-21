@@ -668,6 +668,42 @@
                     return;
                 }
 
+                if (docType === "Note Order") {
+                    statusDiv.textContent = "⏳ அலுவலகக் குறிப்பு அச்சு தயாராகிறது...";
+                    try {
+                        printNoteOrderHtml(kccBatchMembers);
+                        statusDiv.textContent = "✅ அலுவலகக் குறிப்பு அச்சு தயாராக உள்ளது!";
+                    } catch (e) {
+                        console.error(e);
+                        statusDiv.textContent = "❌ அச்சு பிழை: " + e.message;
+                    }
+                    return;
+                }
+
+                if (docType === "KCC 7%") {
+                    statusDiv.textContent = "⏳ KCC 7% வட்டி மானியம் சான்று தயாராகிறது...";
+                    try {
+                        printKcc7PercentHtml(kccBatchMembers);
+                        statusDiv.textContent = "✅ KCC 7% வட்டி மானியம் சான்று தயாராக உள்ளது!";
+                    } catch (e) {
+                        console.error(e);
+                        statusDiv.textContent = "❌ அச்சு பிழை: " + e.message;
+                    }
+                    return;
+                }
+
+                if (docType === "Resolution") {
+                    statusDiv.textContent = "⏳ தீர்மானம் அச்சு தயாராகிறது...";
+                    try {
+                        printResolutionHtml(kccBatchMembers);
+                        statusDiv.textContent = "✅ தீர்மானம் அச்சு தயாராக உள்ளது!";
+                    } catch (e) {
+                        console.error(e);
+                        statusDiv.textContent = "❌ அச்சு பிழை: " + e.message;
+                    }
+                    return;
+                }
+
                 const sheetUrl = getSheetUrl();
                 statusDiv.textContent = "⏳ அச்சுக்கோப்பு தயாராகிறது...";
                 
@@ -770,6 +806,39 @@
                 if (docType === "Sign Page") {
                     try {
                         exportSignPageExcel(kccBatchMembers);
+                        statusDiv.textContent = "✅ எக்செல் கோப்பு பதிவிறக்கம் செய்யப்பட்டது!";
+                    } catch (e) {
+                        console.error(e);
+                        statusDiv.textContent = "❌ எக்செல் பிழை: " + e.message;
+                    }
+                    return;
+                }
+
+                if (docType === "Note Order") {
+                    try {
+                        exportNoteOrderExcel(kccBatchMembers);
+                        statusDiv.textContent = "✅ எக்செல் கோப்பு பதிவிறக்கம் செய்யப்பட்டது!";
+                    } catch (e) {
+                        console.error(e);
+                        statusDiv.textContent = "❌ எக்செல் பிழை: " + e.message;
+                    }
+                    return;
+                }
+
+                if (docType === "KCC 7%") {
+                    try {
+                        exportKcc7PercentExcel(kccBatchMembers);
+                        statusDiv.textContent = "✅ எக்செல் கோப்பு பதிவிறக்கம் செய்யப்பட்டது!";
+                    } catch (e) {
+                        console.error(e);
+                        statusDiv.textContent = "❌ எக்செல் பிழை: " + e.message;
+                    }
+                    return;
+                }
+
+                if (docType === "Resolution") {
+                    try {
+                        exportResolutionExcel(kccBatchMembers);
                         statusDiv.textContent = "✅ எக்செல் கோப்பு பதிவிறக்கம் செய்யப்பட்டது!";
                     } catch (e) {
                         console.error(e);
@@ -2707,6 +2776,8 @@
                     printJabithaHtml(activeHistoryBatch.members);
                 } else if (docType === "Sign Page") {
                     printSignPageHtml(activeHistoryBatch.members);
+                } else if (docType === "Note Order") {
+                    printNoteOrderHtml(activeHistoryBatch.members);
                 } else {
                     // Repost to Apps Script for Google Sheet prepared layouts
                     const sheetUrl = getSheetUrl();
@@ -2766,6 +2837,8 @@
                     exportJabithaExcel(activeHistoryBatch.members);
                 } else if (docType === "Sign Page") {
                     exportSignPageExcel(activeHistoryBatch.members);
+                } else if (docType === "Note Order") {
+                    exportNoteOrderExcel(activeHistoryBatch.members);
                 } else {
                     const sheetUrl = getSheetUrl();
                     if (!sheetUrl) {
@@ -4379,6 +4452,656 @@
 
         XLSX.utils.book_append_sheet(wb, ws, "Sign Page Summary");
         XLSX.writeFile(wb, `Sign_Page_${rclNo.replace(/\//g, '-')}.xlsx`);
+    }
+
+    /* ==========================================================================
+       NOTE ORDER (அலுவலகக் குறிப்பு) PRINT & EXCEL ENGINE
+       ========================================================================== */
+    function printNoteOrderHtml(members) {
+        if (!members || members.length === 0) {
+            alert("பட்டியலில் உறுப்பினர்கள் யாரும் இல்லை!");
+            return;
+        }
+
+        const rclNo = safeSelect('disb-kcc-rcl-no')?.value.trim() || '';
+        const rclDate = safeSelect('disb-kcc-rcl-date')?.value || '';
+        const resNo = safeSelect('disb-kcc-res-no')?.value.trim() || '';
+        const resDate = safeSelect('disb-kcc-res-date')?.value || '';
+        const disbNo = safeSelect('disb-history-no-input')?.value.trim() || 'KCC 1';
+        const rawDisbDate = safeSelect('disb-history-date-input')?.value || safeSelect('disb-kcc-rcl-date')?.value || '';
+        const displayDisbDate = rawDisbDate ? formatDateDDMMYYYY(rawDisbDate) : '____________________';
+
+        // Calculations
+        let totalSeed = 0;
+        let totalFert = 0;
+        let totalCompost = 0;
+        let totalPest = 0;
+        let totalCash = 0;
+        let totalLoanAmount = 0;
+
+        let totalBookFee = 0;
+        let totalInsurance = 0;
+        let totalShare = 0;
+        let totalNetDisb = 0;
+
+        members.forEach(m => {
+            const seed = parseFloat(String(m.seed || '0').replace(/,/g, '')) || 0;
+            const fert = parseFloat(String(m.fertilizer || '0').replace(/,/g, '')) || 0;
+            const compost = parseFloat(String(m.compost || '0').replace(/,/g, '')) || 0;
+            const pest = parseFloat(String(m.pesticide || '0').replace(/,/g, '')) || 0;
+            const cash = parseFloat(String(m.cash || '0').replace(/,/g, '')) || 0;
+            const loan = parseFloat(String(m.amount || '0').replace(/,/g, '')) || 0;
+
+            const bookFee = parseFloat(String(m.book_fee || '0').replace(/,/g, '')) || 0;
+            const insurance = parseFloat(String(m.insurance || '0').replace(/,/g, '')) || 0;
+            const share = parseFloat(String(m.share_amount || '0').replace(/,/g, '')) || 0;
+
+            const totDed = fert + bookFee + insurance + share;
+            const netDisb = loan - totDed;
+
+            totalSeed += seed;
+            totalFert += fert;
+            totalCompost += compost;
+            totalPest += pest;
+            totalCash += cash;
+            totalLoanAmount += loan;
+
+            totalBookFee += bookFee;
+            totalInsurance += insurance;
+            totalShare += share;
+            totalNetDisb += netDisb;
+        });
+
+        const societyAccountTotal = totalBookFee + totalShare;
+
+        // Open print window
+        const w = window.open('', '_blank');
+        if (!w) {
+            alert("Popup blocker தடுத்துள்ளது! தயவுசெய்து Popups அனுமதித்து மீண்டும் முயற்சிக்கவும்.");
+            return;
+        }
+
+        const html = `
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+    <meta charset="UTF-8">
+    <title>அலுவலகக் குறிப்பு (Note Order) - T.U.3 தேவாரம்</title>
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 12mm;
+        }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 10pt;
+            line-height: 1.5;
+            color: #000;
+            margin: 0;
+            padding: 5px;
+        }
+        .top-line {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            font-size: 10.5pt;
+            margin-bottom: 5px;
+        }
+        .header-bank {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+        .header-bank h2 {
+            margin: 0 0 2px 0;
+            font-size: 13pt;
+            text-transform: uppercase;
+        }
+        .header-bank h3 {
+            margin: 0;
+            font-size: 11pt;
+            text-transform: uppercase;
+        }
+        .sub-ref {
+            font-weight: bold;
+            font-size: 10pt;
+            margin-bottom: 12px;
+        }
+        .sub-ref div {
+            margin-bottom: 3px;
+        }
+        .doc-title {
+            text-align: center;
+            font-weight: bold;
+            font-size: 12pt;
+            text-decoration: underline;
+            margin: 10px 0 15px 0;
+        }
+        .paragraph {
+            text-align: justify;
+            text-indent: 35px;
+            margin-bottom: 12px;
+        }
+        .table-container {
+            display: flex;
+            gap: 15px;
+            justify-content: space-between;
+            margin: 15px 0 20px 0;
+        }
+        .table-wrapper {
+            flex: 1;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #000;
+            padding: 5px 6px;
+            font-size: 9.5pt;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+            text-align: center;
+        }
+        .signature-block {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 45px;
+            font-weight: bold;
+            font-size: 10pt;
+        }
+        .signature-box {
+            text-align: center;
+            width: 160px;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-line">
+        <div>Loan No: ${disbNo}</div>
+        <div>Date: ____________________</div>
+    </div>
+
+    <div class="header-bank">
+        <h2>THE MADURAI DISTRICT CENTRAL CO-OPERATIVE BANK LTD.,</h2>
+        <h3>THEVARAM BRANCH</h3>
+    </div>
+
+    <div class="sub-ref">
+        <div>Subject &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: KCC1</div>
+        <div>Reference No. : RCL No: ${rclNo || '-'} &nbsp;&nbsp;&nbsp;&nbsp; Dt: ${formatDateDDMMYYYY(rclDate) || '-'}</div>
+    </div>
+
+            நாள் : ${displayDisbDate}
+        </div>
+        <div class="footer-right">
+            <br><br>
+            செயலாளர்
+        </div>
+    </div>
+
+    <script>
+        window.onload = function() {
+            window.print();
+        };
+    </script>
+</body>
+</html>
+        `;
+
+        w.document.write(html);
+        w.document.close();
+    }
+
+    function exportKcc7PercentExcel(members) {
+        if (!members || members.length === 0) {
+            alert("பதிவிறக்க உறுப்பினர்கள் யாரும் இல்லை!");
+            return;
+        }
+
+        const rclNo = safeSelect('disb-kcc-rcl-no')?.value.trim() || '';
+        const rclDate = safeSelect('disb-kcc-rcl-date')?.value || '';
+        const resNo = safeSelect('disb-kcc-res-no')?.value.trim() || '';
+        const resDate = safeSelect('disb-kcc-res-date')?.value || '';
+        const rawDisbDate = safeSelect('disb-history-date-input')?.value || safeSelect('disb-kcc-rcl-date')?.value || '';
+        const displayDisbDate = rawDisbDate ? formatDateDDMMYYYY(rawDisbDate) : '';
+
+        let totalLoanAmount = 0;
+        members.forEach(m => {
+            const loan = parseFloat(String(m.amount || '0').replace(/,/g, '')) || 0;
+            totalLoanAmount += loan;
+        });
+
+        const dataRows = [
+            ["TU3 தேவாரம் தொடக்க வேளாண்மை கூட்டுறவு கடன் சங்கம், தேவாரம்-625530 உத்தமபாளையம் தாலுகா, தேனி மாவட்டம்."],
+            ["பெறுநர்"],
+            ["", "உயர்திரு. கிளை மேலாளர் அவர்கள்,"],
+            ["", "மதுரை மாவட்ட மத்திய கூட்டுறவு வங்கி லிட்., தேவாரம் கிளை."],
+            ["ஐயா,"],
+            [`பொருள்: TU3 தேவாரம் PACCS மத்திய கூட்டுறவு வங்கியிலிருந்து KCC-I மற்றும் KCC-AH ஆகிய காசுகடன் பெறுவதற்கு சுய உறுதிமொழி சான்று வழங்குதல் - தொடர்பாக.`],
+            ["சுய உறுதிமொழி சான்று"],
+            [`மதுரை மாவட்ட மத்திய கூட்டுறவு வங்கியிலிருந்து எங்கள் TU3 தேவாரம் தொடக்க வேளாண்மை கூட்டுறவு கடன் சங்கத்திற்கு RCL-${rclNo} Dt:${formatDateDDMMYYYY(rclDate)} ன் படி அனுமதிக்கப்பட்டுள்ள KCC-I மற்றும் KCC-AH காசுகடன் நிதியுதவி / கடனுதவியிலிருந்து 2025-2026ம் நிதியாண்டிற்கு பெற்று எங்கள் சங்க தீர்மானம் எண்:${resNo} நாள்:${formatDateDDMMYYYY(resDate)} ம் தேதி இயற்றப்பட்டுள்ள தீர்மானத்தின் படி KCC -1 காசுகடன் பட்டுவாடாவிற்கு ${members.length} விவசாய உறுப்பினர்களுக்கு கடன் தொகையாக ரூ.${totalLoanAmount}/- மட்டும் வழங்கப்படுவதற்கு, அதே உறுப்பினர்கள் பிற வங்கிகளில் விவசாயக்கடன் பெற்றுள்ளதாக பின்னீடு அறியவரும் நிலையில் அதனால் 7% வட்டி மானியம் கிடைப்பதில் ஏதேனும் இடர்பாடு ஏற்பட்டு அரசிடமிருந்து மானியமாக வர வேண்டிய வட்டித் தொகை மீளப்பெறாத சூழ்நிலையில், அந்நிதிமிழப்பினை மத்திய வங்கிக்கு திரும்பச் செலுத்தி நேர்செய்யும் பொருட்டு, எங்கள் சங்கத்தின் சேமிப்பு கணக்கு / நடப்பு கணக்கிலிருந்து பற்றெழுதி நேர்செய்து கொள்ள சம்மதம் தெரிவித்துக் கொள்கிறோம்.`],
+            [],
+            [`இடம் : தேவாரம்`, "", "", "", "", "", "", `செயலாளர்`],
+            [`நாள் : ${displayDisbDate}`]
+        ];
+
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet(dataRows);
+
+        ws['!cols'] = [
+            { wch: 15 },
+            { wch: 20 },
+            { wch: 20 },
+            { wch: 20 },
+            { wch: 20 },
+            { wch: 20 },
+            { wch: 20 },
+            { wch: 20 }
+        ];
+
+        XLSX.utils.book_append_sheet(wb, ws, "KCC 7% Subsidy");
+        XLSX.writeFile(wb, `KCC_7Percent_${rclNo.replace(/\//g, '-')}.xlsx`);
+    }
+
+    /* ==========================================================================
+       RESOLUTION (தீர்மானம்) PRINT & EXCEL ENGINE
+       ========================================================================== */
+    function numberToTamilWords(num) {
+        num = Math.round(Number(num) || 0);
+        if (num <= 0) return "பூஜ்யம்";
+
+        const units = ["", "ஒன்று", "இரண்டு", "மூன்று", "நான்கு", "ஐந்து", "ஆறு", "ஏழு", "எட்டு", "ஒன்பது"];
+        const tens = ["", "பத்து", "இருபது", "முப்பது", "நாற்பது", "ஐம்பது", "அறுபது", "எழுபது", "எண்பது", "தொண்ணூறு"];
+        const tensCombine = ["", "பத்தே ", "இருபத்தே ", "முப்பத்தே ", "நாற்பத்தே ", "ஐம்பத்தே ", "அறுபத்தே ", "எழுபத்தே ", "எண்பத்தே ", "தொண்ணூற்றே "];
+        const hundreds = ["", "நூறு", "இருநூறு", "முந்நூறு", "நானூறு", "ஐநூறு", "அறநூறு", "எழுநூறு", "எண்ணூறு", "தொளாயிரம்"];
+        const hundredsCombine = ["", "நூற்று ", "இருநூற்று ", "முந்நூற்று ", "நானூற்று ", "ஐநூற்று ", "அறநூற்று ", "எழுநூற்று ", "எண்ணூற்று ", "தொளாயிரத்து "];
+
+        function convertUnder1000(n) {
+            let str = "";
+            if (n >= 100) {
+                const h = Math.floor(n / 100);
+                n = n % 100;
+                str += (n === 0) ? hundreds[h] : hundredsCombine[h];
+            }
+            if (n > 0) {
+                if (n < 10) str += units[n];
+                else if (n === 10) str += "பத்து";
+                else if (n < 20) {
+                    const teens = ["பதினொன்று", "பன்னிரண்டு", "பதின்மூன்று", "பதினான்கு", "பதினைந்து", "பதினாறு", "பதினேழு", "பதினெட்டு", "பத்தொன்பது"];
+                    str += teens[n - 11];
+                } else {
+                    const t = Math.floor(n / 10);
+                    const u = n % 10;
+                    str += (u === 0) ? tens[t] : (tensCombine[t] + units[u]);
+                }
+            }
+            return str;
+        }
+
+        let result = "";
+        if (num >= 10000000) {
+            const cr = Math.floor(num / 10000000);
+            num = num % 10000000;
+            result += convertUnder1000(cr) + (num === 0 ? " கோடி" : " கோடியே ");
+        }
+        if (num >= 100000) {
+            const lakh = Math.floor(num / 100000);
+            num = num % 100000;
+            result += (lakh === 1) ? (num === 0 ? "ஒரு லட்சம்" : "ஒரு லட்சத்து ") : (convertUnder1000(lakh) + (num === 0 ? " லட்சம்" : " லட்சத்து "));
+        }
+        if (num >= 1000) {
+            const th = Math.floor(num / 1000);
+            num = num % 1000;
+            if (th === 1) {
+                result += (num === 0 ? "ஆயிரம்" : "ஆயிரத்து ");
+            } else {
+                let thText = convertUnder1000(th);
+                if (thText.endsWith("ஒன்று")) thText = thText.slice(0, -5) + "ஓராயிரம்";
+                else if (thText.endsWith("இரண்டு")) thText = thText.slice(0, -6) + "இரண்டாயிரம்";
+                else if (thText.endsWith("மூன்று")) thText = thText.slice(0, -6) + "மூன்றாயிரம்";
+                else if (thText.endsWith("நான்கு")) thText = thText.slice(0, -6) + "நான்காயிரம்";
+                else if (thText.endsWith("ஐந்து")) thText = thText.slice(0, -5) + "ஐந்தாயிரம்";
+                else if (thText.endsWith("ஆறு")) thText = thText.slice(0, -3) + "ஆறாயிரம்";
+                else if (thText.endsWith("ஏழு")) thText = thText.slice(0, -3) + "ஏழாயிரம்";
+                else if (thText.endsWith("எட்டு")) thText = thText.slice(0, -4) + "எட்டாயிரம்";
+                else if (thText.endsWith("ஒன்பது")) thText = thText.slice(0, -6) + "ஒன்பதாயிரம்";
+                else thText += " ஆயிரம்";
+                result += thText + (num === 0 ? "" : "த்து ");
+            }
+        }
+        if (num > 0) result += convertUnder1000(num);
+        return result.trim().replace(/\s+/g, ' ');
+    }
+
+    function printResolutionHtml(members) {
+        if (!members || members.length === 0) {
+            alert("பட்டியலில் உறுப்பினர்கள் யாரும் இல்லை!");
+            return;
+        }
+
+        const rclNo = safeSelect('disb-kcc-rcl-no')?.value.trim() || '';
+        const rclDate = safeSelect('disb-kcc-rcl-date')?.value || '';
+        const resNo = safeSelect('disb-kcc-res-no')?.value.trim() || '1';
+        const resDate = safeSelect('disb-kcc-res-date')?.value || '';
+        const formattedResDate = resDate ? formatDateDDMMYYYY(resDate) : '____________________';
+
+        let dateHeaderTamil = `${formattedResDate} ம் தேதி`;
+        if (resDate) {
+            const dt = new Date(resDate);
+            if (!isNaN(dt.getTime())) {
+                const monthsTamil = ["ஜனவரி", "பிப்ரவரி", "மார்ச்", "ஏப்ரல்", "மே", "ஜூன்", "ஜூலை", "ஆகஸ்ட்", "செப்டம்பர்", "அக்டோபர்", "நவம்பர்", "டிசம்பர்"];
+                dateHeaderTamil = `${dt.getFullYear()} ம் ஆண்டு ${monthsTamil[dt.getMonth()]} மாதம் ${dt.getDate()} ம் தேதி`;
+            }
+        }
+
+        let totalArea = 0;
+        let totalLoanAmount = 0;
+
+        members.forEach(m => {
+            const area = parseFloat(String(m.area || '0').replace(/,/g, '')) || 0;
+            const loan = parseFloat(String(m.amount || '0').replace(/,/g, '')) || 0;
+            totalArea += area;
+            totalLoanAmount += loan;
+        });
+
+        const amountInWords = numberToTamilWords(totalLoanAmount);
+
+        // Open print window
+        const w = window.open('', '_blank');
+        if (!w) {
+            alert("Popup blocker தடுத்துள்ளது! தயவுசெய்து Popups அனுமதித்து மீண்டும் முயற்சிக்கவும்.");
+            return;
+        }
+
+        const html = `
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+    <meta charset="UTF-8">
+    <title>தீர்மானம் (Resolution) - T.U.3 தேவாரம்</title>
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 10mm 12mm;
+        }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 9.5pt;
+            line-height: 1.4;
+            color: #000;
+            margin: 0;
+            padding: 5px;
+        }
+        .header-title {
+            text-align: center;
+            font-weight: bold;
+            font-size: 11pt;
+            margin-bottom: 4px;
+        }
+        .header-subtitle {
+            text-align: center;
+            font-weight: bold;
+            font-size: 10pt;
+            margin-bottom: 4px;
+        }
+        .header-officer {
+            text-align: center;
+            font-weight: bold;
+            font-size: 9.5pt;
+            margin-bottom: 12px;
+        }
+        .res-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 12px;
+        }
+        .res-table th, .res-table td {
+            border: 1px solid #000;
+            padding: 6px 8px;
+            vertical-align: top;
+            font-size: 9pt;
+            text-align: justify;
+        }
+        .res-table th {
+            background-color: #f2f2f2;
+            text-align: center;
+            font-weight: bold;
+        }
+        .members-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+        .members-table th, .members-table td {
+            border: 1px solid #000;
+            padding: 4px 5px;
+            font-size: 8.5pt;
+            text-align: center;
+        }
+        .members-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        .members-table td.left {
+            text-align: left;
+        }
+        .members-table td.right {
+            text-align: right;
+        }
+        .signature-block {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 40px;
+            font-weight: bold;
+            font-size: 9.5pt;
+        }
+        .signature-box {
+            text-align: center;
+            width: 240px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header-title">
+        T.U.3 தேவாரம் தொடக்க வேளாண்மை கூட்டுறவு கடன் சங்கம், தேவாரம்.
+    </div>
+    <div class="header-subtitle">
+        ${dateHeaderTamil} TU3 தேவாரம் தொடக்க வேளாண்மை கூட்டுறவு கடன் சங்கத்தின் நிர்வாகக்குழு கூட்ட நடவடிக்கைகள்.
+    </div>
+    <div class="header-officer">
+        பிறப்பிப்பவர்: திரு.அ.சீனிவாசப்பெருமாள், கூட்டுறவு சார்பதிவாளர் / செயலாட்சியர் அவர்கள்
+    </div>
+
+    <table class="res-table">
+        <thead>
+            <tr>
+                <th style="width: 50%;">விஷயம் - ${resNo}</th>
+                <th style="width: 50%;">தீர்மானம் - ${resNo}</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    எமது சங்கத்தின் 2026-2027ம் ஆண்டிற்கு கடன் கோரும் கீழ்கண்ட உறுப்பினர்களுக்கு KCC1 விவசாய வெண்ணிலா ஜாமீன் கடன் பத்திரம் மூலம் முன் கடன் திருப்பி செலுத்திய <strong>${members.length}</strong> நபருக்கும் வெண்ணிலா ஜாமீன் கடன் பத்திரம் மூலம் புதிய நபர் _________ தொடர்ச்சி அடமான கடன் பத்திரம் மூலம் முன் கடன் திருப்பி செலுத்திய ________ நபர்களுக்கு தொடர்ச்சி அடமான கடன் பத்திரம் மூலம் புதிய உறுப்பினர் ________ ஆகமொத்தம் <strong>${members.length}</strong> உறுப்பினர்களுக்கு மதுரை மாவட்ட மத்திய கூட்டுறவு வங்கியின் தலைமையகம் மூலம் அனுமதி உத்தரவு RCL ${rclNo || '-'} Dt.${formatDateDDMMYYYY(rclDate) || '-'} இலிருந்து விவசாய பயிர்கடனுக்கு நடப்பு ஆண்டிற்கு அனுமதித்த தொகை ரூ. 3,00,00,000/- கீழ்க்கண்ட விவரப்படி ரூ. <strong>${totalLoanAmount.toLocaleString('en-IN')}</strong>/- (ரூபாய் ${amountInWords} மட்டும்) பட்டுவாடா வழங்குமாறு மதுரை மாவட்ட மத்திய கூட்டுறவு வங்கி தேவாரம் கிளை மேலாளரை கேட்டுக் கொள்ளும் விஷயம்.
+                </td>
+                <td>
+                    அவ்வாறே எமது சங்கத்தின் 2026-2027ம் ஆண்டிற்கு கடன் கோரும் கீழ்கண்ட உறுப்பினர்களுக்கு KCC1 விவசாய வெண்ணிலா ஜாமீன் கடன் பத்திரம் மூலம் முன் கடன் திருப்பி செலுத்திய <strong>${members.length}</strong> நபருக்கும் வெண்ணிலா ஜாமீன் கடன் பத்திரம் மூலம் புதிய நபர் _________ தொடர்ச்சி அடமான கடன் பத்திரம் மூலம் முன் கடன் திருப்பி செலுத்திய ________ நபர்களுக்கு தொடர்ச்சி அடமான கடன் பத்திரம் மூலம் புதிய உறுப்பினர் ________ ஆகமொத்தம் <strong>${members.length}</strong> உறுப்பினர்களுக்கு மதுரை மாவட்ட மத்திய கூட்டுறவு வங்கியின் தலைமையகம் மூலம் அனுமதி உத்தரவு RCL ${rclNo || '-'} Dt.${formatDateDDMMYYYY(rclDate) || '-'} இலிருந்து விவசாய பயிர்கடனுக்கு நடப்பு ஆண்டிற்கு அனுமதித்த தொகை ரூ. 3,00,00,000/- கீழ்க்கண்ட விவரப்படி ரூ. <strong>${totalLoanAmount.toLocaleString('en-IN')}</strong>/- (ரூபாய் ${amountInWords} மட்டும்) பட்டுவாடா வழங்குமாறு மதுரை மாவட்ட மத்திய கூட்டுறவு வங்கி தேவாரம் கிளை மேலாளரை கேட்டுக் கொள்ள தீர்மானிக்கலாயிற்று.
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <table class="members-table">
+        <thead>
+            <tr>
+                <th style="width: 32px;">வ.எண்</th>
+                <th style="width: 45px;">அ.எண்</th>
+                <th style="width: 45px;">S.B</th>
+                <th style="width: 55px;">ERP</th>
+                <th>பெயர்</th>
+                <th style="width: 75px;">சர்வே எண்</th>
+                <th style="width: 50px;">பரப்பு</th>
+                <th style="width: 65px;">பயிர்</th>
+                <th style="width: 75px;">கடன்தொகை</th>
+                <th style="width: 95px;">ஆதார விபரம்</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${members.map((m, idx) => {
+                const loan = parseFloat(String(m.amount || '0').replace(/,/g, '')) || 0;
+                const area = parseFloat(String(m.area || '0').replace(/,/g, '')) || 0;
+                const admissionNo = m.admission_no || m.aclass || m.a_no || m.member_no || '';
+                const sbAcc = m.sb_acc || m.sb || m.sb_account || '';
+                const erpNo = m.erp_no || m.erp || '';
+                const name = m.member_name || m.name || '';
+                const surveyNo = m.survey_no || m.survey || '';
+                const cropName = m.crop_name || m.crop || '';
+                const aadhaaram = m.collateral_type || m.aadhaar_type || m.aadhaaram || m.remarks || 'நபர் ஜாமீன்';
+
+                return `
+                <tr>
+                    <td>${idx + 1}</td>
+                    <td>${admissionNo}</td>
+                    <td>${sbAcc}</td>
+                    <td>${erpNo}</td>
+                    <td class="left">${name}</td>
+                    <td>${surveyNo}</td>
+                    <td>${area > 0 ? area.toFixed(2) : ''}</td>
+                    <td>${cropName}</td>
+                    <td class="right">${loan > 0 ? loan.toLocaleString('en-IN') : '0'}</td>
+                    <td>${aadhaaram}</td>
+                </tr>
+                `;
+            }).join('')}
+            <tr style="font-weight: bold; background-color: #f9f9f9;">
+                <td colspan="6" style="text-align: right;">மொத்தம் :</td>
+                <td>${totalArea.toFixed(2)}</td>
+                <td></td>
+                <td class="right">${totalLoanAmount.toLocaleString('en-IN')}</td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="signature-block">
+        <div class="signature-box">
+            <br><br><br>
+            கூட்டுறவு சார் பதிவாளர் / செயலாட்சியர்
+        </div>
+    </div>
+
+    <script>
+        window.onload = function() {
+            window.print();
+        };
+    </script>
+</body>
+</html>
+        `;
+
+        w.document.write(html);
+        w.document.close();
+    }
+
+    function exportResolutionExcel(members) {
+        if (!members || members.length === 0) {
+            alert("பதிவிறக்க உறுப்பினர்கள் யாரும் இல்லை!");
+            return;
+        }
+
+        const rclNo = safeSelect('disb-kcc-rcl-no')?.value.trim() || '';
+        const rclDate = safeSelect('disb-kcc-rcl-date')?.value || '';
+        const resNo = safeSelect('disb-kcc-res-no')?.value.trim() || '1';
+        const resDate = safeSelect('disb-kcc-res-date')?.value || '';
+        const formattedResDate = resDate ? formatDateDDMMYYYY(resDate) : '____________________';
+
+        let dateHeaderTamil = `${formattedResDate} ம் தேதி`;
+        if (resDate) {
+            const dt = new Date(resDate);
+            if (!isNaN(dt.getTime())) {
+                const monthsTamil = ["ஜனவரி", "பிப்ரவரி", "மார்ச்", "ஏப்ரல்", "மே", "ஜூன்", "ஜூலை", "ஆகஸ்ட்", "செப்டம்பர்", "அக்டோபர்", "நவம்பர்", "டிசம்பர்"];
+                dateHeaderTamil = `${dt.getFullYear()} ம் ஆண்டு ${monthsTamil[dt.getMonth()]} மாதம் ${dt.getDate()} ம் தேதி`;
+            }
+        }
+
+        let totalArea = 0;
+        let totalLoanAmount = 0;
+
+        members.forEach(m => {
+            const area = parseFloat(String(m.area || '0').replace(/,/g, '')) || 0;
+            const loan = parseFloat(String(m.amount || '0').replace(/,/g, '')) || 0;
+            totalArea += area;
+            totalLoanAmount += loan;
+        });
+
+        const amountInWords = numberToTamilWords(totalLoanAmount);
+
+        const dataRows = [
+            ["T.U.3 தேவாரம் தொடக்க வேளாண்மை கூட்டுறவு கடன் சங்கம், தேவாரம்."],
+            [`${dateHeaderTamil} TU3 தேவாரம் தொடக்க வேளாண்மை கூட்டுறவு கடன் சங்கத்தின் நிர்வாகக்குழு கூட்ட நடவடிக்கைகள்.`],
+            ["பிறப்பிப்பவர்: திரு.அ.சீனிவாசப்பெருமாள், கூட்டுறவு சார்பதிவாளர் / செயலாட்சியர் அவர்கள்"],
+            [],
+            [`விஷயம் - ${resNo}`, `தீர்மானம் - ${resNo}`],
+            [
+                `எமது சங்கத்தின் 2026-2027ம் ஆண்டிற்கு கடன் கோரும் கீழ்கண்ட உறுப்பினர்களுக்கு KCC1 விவசாய வெண்ணிலா ஜாமீன் கடன் பத்திரம் மூலம் முன் கடன் திருப்பி செலுத்திய ${members.length} நபருக்கும் வெண்ணிலா ஜாமீன் கடன் பத்திரம் மூலம் புதிய நபர் _________ தொடர்ச்சி அடமான கடன் பத்திரம் மூலம் முன் கடன் திருப்பி செலுத்திய ________ நபர்களுக்கு தொடர்ச்சி அடமான கடன் பத்திரம் மூலம் புதிய உறுப்பினர் ________ ஆகமொத்தம் ${members.length} உறுப்பினர்களுக்கு மதுரை மாவட்ட மத்திய கூட்டுறவு வங்கியின் தலைமையகம் மூலம் அனுமதி உத்தரவு RCL ${rclNo} Dt.${formatDateDDMMYYYY(rclDate)} இலிருந்து விவசாய பயிர்கடனுக்கு நடப்பு ஆண்டிற்கு அனுமதித்த தொகை ரூ. 3,00,00,000/- கீழ்க்கண்ட விவரப்படி ரூ.${totalLoanAmount}/- (ரூபாய் ${amountInWords} மட்டும்) பட்டுவாடா வழங்குமாறு மதுரை மாவட்ட மத்திய கூட்டுறவு வங்கி தேவாரம் கிளை மேலாளரை கேட்டுக் கொள்ளும் விஷயம்.`,
+                `அவ்வாறே எமது சங்கத்தின் 2026-2027ம் ஆண்டிற்கு கடன் கோரும் கீழ்கண்ட உறுப்பினர்களுக்கு KCC1 விவசாய வெண்ணிலா ஜாமீன் கடன் பத்திரம் மூலம் முன் கடன் திருப்பி செலுத்திய ${members.length} நபருக்கும் வெண்ணிலா ஜாமீன் கடன் பத்திரம் மூலம் புதிய நபர் _________ தொடர்ச்சி அடமான கடன் பத்திரம் மூலம் முன் கடன் திருப்பி செலுத்திய ________ நபர்களுக்கு தொடர்ச்சி அடமான கடன் பத்திரம் மூலம் புதிய உறுப்பினர் ________ ஆகமொத்தம் ${members.length} உறுப்பினர்களுக்கு மதுரை மாவட்ட மத்திய கூட்டுறவு வங்கியின் தலைமையகம் மூலம் அனுமதி உத்தரவு RCL ${rclNo} Dt.${formatDateDDMMYYYY(rclDate)} இலிருந்து விவசாய பயிர்கடனுக்கு நடப்பு ஆண்டிற்கு அனுமதித்த தொகை ரூ. 3,00,00,000/- கீழ்க்கண்ட விவரப்படி ரூ.${totalLoanAmount}/- (ரூபாய் ${amountInWords} மட்டும்) பட்டுவாடா வழங்குமாறு மதுரை மாவட்ட மத்திய கூட்டுறவு வங்கி தேவாரம் கிளை மேலாளரை கேட்டுக் கொள்ள தீர்மானிக்கலாயிற்று.`
+            ],
+            [],
+            ["வ.எண்", "அ.எண்", "S.B", "ERP", "பெயர்", "சர்வே எண்", "பரப்பு", "பயிர்", "கடன்தொகை", "ஆதார விபரம்"]
+        ];
+
+        members.forEach((m, idx) => {
+            const area = parseFloat(String(m.area || '0').replace(/,/g, '')) || 0;
+            const loan = parseFloat(String(m.amount || '0').replace(/,/g, '')) || 0;
+            const admissionNo = m.admission_no || m.aclass || m.a_no || m.member_no || '';
+            const sbAcc = m.sb_acc || m.sb || m.sb_account || '';
+            const erpNo = m.erp_no || m.erp || '';
+            const name = m.member_name || m.name || '';
+            const surveyNo = m.survey_no || m.survey || '';
+            const cropName = m.crop_name || m.crop || '';
+            const aadhaaram = m.collateral_type || m.aadhaar_type || m.aadhaaram || m.remarks || 'நபர் ஜாமீன்';
+
+            dataRows.push([
+                idx + 1,
+                admissionNo,
+                sbAcc,
+                erpNo,
+                name,
+                surveyNo,
+                area > 0 ? area : '',
+                cropName,
+                loan,
+                aadhaaram
+            ]);
+        });
+
+        dataRows.push([
+            "மொத்தம்", "", "", "", "", totalArea, "", totalLoanAmount, ""
+        ]);
+        dataRows.push([]);
+        dataRows.push(["", "", "", "", "", "", "", "", "", "கூட்டுறவு சார் பதிவாளர் / செயலாட்சியர்"]);
+
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet(dataRows);
+
+        ws['!cols'] = [
+            { wch: 8 },  // வ.எண்
+            { wch: 10 }, // அ.எண்
+            { wch: 10 }, // S.B
+            { wch: 12 }, // ERP
+            { wch: 22 }, // பெயர்
+            { wch: 14 }, // சர்வே எண்
+            { wch: 10 }, // பரப்பு
+            { wch: 15 }, // பயிர்
+            { wch: 15 }, // கடன்தொகை
+            { wch: 18 }  // ஆதார விபரம்
+        ];
+
+        XLSX.utils.book_append_sheet(wb, ws, "Resolution Summary");
+        XLSX.writeFile(wb, `Resolution_${resNo}_${rclNo.replace(/\//g, '-')}.xlsx`);
     }
 
     // Initialization on page load

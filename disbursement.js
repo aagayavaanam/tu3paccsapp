@@ -218,14 +218,30 @@
             });
         }
 
-        // Auto-format Area input to 2 decimal places on focus out (blur)
+        // Auto-format Area input to 2 decimal places & update Land Class (MF, SF, OF)
         const inputArea = safeSelect('disb-kcc-area');
+        const farmerCategorySelect = safeSelect('disb-kcc-farmer-category');
+        function autoUpdateFarmerCategory() {
+            if (inputArea && farmerCategorySelect) {
+                const area = parseFloat(inputArea.value) || 0;
+                if (area <= 2.50) {
+                    farmerCategorySelect.value = "MF";
+                } else if (area <= 5.00) {
+                    farmerCategorySelect.value = "SF";
+                } else {
+                    farmerCategorySelect.value = "OF";
+                }
+            }
+        }
         if (inputArea) {
+            inputArea.addEventListener('input', autoUpdateFarmerCategory);
+            inputArea.addEventListener('change', autoUpdateFarmerCategory);
             inputArea.addEventListener('blur', () => {
                 const val = parseFloat(inputArea.value);
                 if (!isNaN(val)) {
                     inputArea.value = val.toFixed(2);
                 }
+                autoUpdateFarmerCategory();
             });
         }
 
@@ -533,7 +549,7 @@
                 const existingIndex = history.findIndex(item => String(item.disb_no) === disbNo);
                 const batchRecord = {
                     disb_no: disbNo,
-                    disb_date: todayStr,
+                    disb_date: "", // Blank draft until confirmed in History
                     rcl_no: rclNo,
                     rcl_date: rclDate,
                     res_no: resNo,
@@ -967,6 +983,101 @@
         }
     }
 
+    function detectGenderFromMaster(member) {
+        if (!member) return "ஆண் உறுப்பினர்";
+
+        const genderKeys = [
+            'male and female', 'male_and_female', 'male & female', 'male/female',
+            'male', 'female', 'gender', 'sex', 'பாலினம்', 'ஆண்/பெண்', 'ஆண் அல்லது பெண்',
+            'ஆண்', 'பெண்'
+        ];
+
+        let rawVal = "";
+        for (let i = 0; i < genderKeys.length; i++) {
+            const val = getFuzzyValue(member, [genderKeys[i]]);
+            if (val !== undefined && val !== null && String(val).trim() !== "") {
+                rawVal = String(val).trim().toUpperCase();
+                break;
+            }
+        }
+
+        if (!rawVal) {
+            const keys = Object.keys(member);
+            for (let i = 0; i < keys.length; i++) {
+                const k = keys[i].toLowerCase();
+                if (k.includes('male') || k.includes('female') || k.includes('gender') || k.includes('sex') || k.includes('பாலினம்')) {
+                    const v = String(member[keys[i]]).trim().toUpperCase();
+                    if (v) {
+                        rawVal = v;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (rawVal) {
+            if (rawVal.includes('FEMALE') || rawVal.includes('பெண்') || rawVal.includes('WOMAN') || rawVal.includes('LADY') || rawVal === 'F') {
+                return "பெண் உறுப்பினர்";
+            }
+            if (rawVal.includes('MALE') || rawVal.includes('ஆண்') || rawVal.includes('MAN') || rawVal === 'M') {
+                return "ஆண் உறுப்பினர்";
+            }
+        }
+
+        return "ஆண் உறுப்பினர்";
+    }
+
+    function detectCasteCategoryFromMaster(member) {
+        if (!member) return "Others";
+
+        const keys = [
+            'category', 'caste', 'community', 'caste category', 'caste_category',
+            'இனம்', 'சாதி', 'பிரிவு', 'சமூகம்'
+        ];
+
+        let rawVal = "";
+        for (let i = 0; i < keys.length; i++) {
+            const val = getFuzzyValue(member, [keys[i]]);
+            if (val !== undefined && val !== null && String(val).trim() !== "") {
+                rawVal = String(val).trim().toUpperCase();
+                break;
+            }
+        }
+
+        if (!rawVal) {
+            const objKeys = Object.keys(member);
+            for (let i = 0; i < objKeys.length; i++) {
+                const k = objKeys[i].toLowerCase();
+                if (k.includes('caste') || k.includes('category') || k.includes('community') || k.includes('இனம்') || k.includes('சாதி')) {
+                    const v = String(member[objKeys[i]]).trim().toUpperCase();
+                    if (v) {
+                        rawVal = v;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (rawVal) {
+            if (rawVal.includes('SC') || rawVal.includes('ST') || rawVal.includes('எஸ்சி') || rawVal.includes('எஸ்டி')) {
+                return "SC/ST";
+            }
+        }
+
+        return "Others";
+    }
+
+    function calculateFarmerCategoryFromArea(areaVal) {
+        const area = parseFloat(String(areaVal || '0').replace(/,/g, '')) || 0;
+        if (area <= 2.50) {
+            return "MF";
+        } else if (area <= 5.00) {
+            return "SF";
+        } else {
+            return "OF";
+        }
+    }
+
     function populateKccMemberLabels(member) {
         const keys = Object.keys(member);
         const memberId = member[keys[0]] || '';
@@ -1005,6 +1116,25 @@
         safeSelect('lbl-disb-kcc-nominee').textContent = nominee;
         safeSelect('lbl-disb-kcc-relationship').textContent = relationship;
         
+        // Auto-detect & set Gender in Part 6 based on Master Data ("Male and Female" column)
+        const genderSelect = safeSelect('disb-kcc-gender');
+        if (genderSelect) {
+            genderSelect.value = detectGenderFromMaster(member);
+        }
+
+        // Auto-detect & set Caste Category in Part 6 based on Master Data
+        const casteCategorySelect = safeSelect('disb-kcc-caste-category');
+        if (casteCategorySelect) {
+            casteCategorySelect.value = detectCasteCategoryFromMaster(member);
+        }
+
+        // Auto-calculate & set Farmer Category in Part 6 based on Land Area (MF: 0-2.50, SF: 2.51-5.00, OF: >5.00)
+        const farmerCategorySelect = safeSelect('disb-kcc-farmer-category');
+        if (farmerCategorySelect) {
+            const areaVal = member.area || getFuzzyValue(member, ['area', 'extent', 'பரப்பு', 'விஸ்தீரணம்']) || safeSelect('disb-kcc-area')?.value || 0;
+            farmerCategorySelect.value = calculateFarmerCategoryFromArea(areaVal);
+        }
+
         // Auto-suggest loan amount based on approved amount
         const approvedAmt = getFuzzyValue(member, ['approved', 'sanction', 'ஒப்புதல்']) || '';
         if (approvedAmt) {
@@ -1141,7 +1271,7 @@
                     if (farmerCategorySelect) farmerCategorySelect.value = member.farmer_category || "MF";
                     
                     const genderSelect = safeSelect('disb-kcc-gender');
-                    if (genderSelect) genderSelect.value = member.gender || "ஆண் உறுப்பினர்";
+                    if (genderSelect) genderSelect.value = member.gender || detectGenderFromMaster(masterMember || member);
                     
                     const disabilityInput = safeSelect('disb-kcc-disability');
                     if (disabilityInput) disabilityInput.value = member.disability !== undefined ? member.disability : "0";
@@ -2013,8 +2143,8 @@
         const rclDate = safeSelect('disb-kcc-rcl-date')?.value || '';
         const resNo = safeSelect('disb-kcc-res-no')?.value.trim() || '';
         const resDate = safeSelect('disb-kcc-res-date')?.value || '';
-        const rawDisbDate = safeSelect('disb-history-date-input')?.value || '';
-        const displayDisbDate = rawDisbDate ? formatDateDDMMYYYY(rawDisbDate) : '____________________';
+        const rawDisbDate = safeSelect('disb-history-date-input')?.value || (typeof activeHistoryBatch !== 'undefined' && activeHistoryBatch ? activeHistoryBatch.disb_date : '');
+        const displayDisbDate = rawDisbDate ? formatDateDDMMYYYY(rawDisbDate) : '';
 
         // Open print window
         const w = window.open('', '_blank');
@@ -3712,8 +3842,8 @@
 
         const rclNo = safeSelect('disb-kcc-rcl-no')?.value.trim() || '';
         const rclDate = safeSelect('disb-kcc-rcl-date')?.value || '';
-        const rawDisbDate = safeSelect('disb-history-date-input')?.value || '';
-        const displayDisbDate = rawDisbDate ? formatDateDDMMYYYY(rawDisbDate) : '____________________';
+        const rawDisbDate = safeSelect('disb-history-date-input')?.value || (typeof activeHistoryBatch !== 'undefined' && activeHistoryBatch ? activeHistoryBatch.disb_date : '');
+        const displayDisbDate = rawDisbDate ? formatDateDDMMYYYY(rawDisbDate) : '';
 
         // Open print window
         const w = window.open('', '_blank');
@@ -3929,13 +4059,12 @@
             return;
         }
 
-        const rclNo = safeSelect('disb-kcc-rcl-no')?.value.trim() || '';
-        const rclDate = safeSelect('disb-kcc-rcl-date')?.value || '';
-        const disbDate = safeSelect('disb-history-date-input')?.value || safeSelect('disb-kcc-rcl-date')?.value || '';
+        const rawDisbDate = safeSelect('disb-history-date-input')?.value || (typeof activeHistoryBatch !== 'undefined' && activeHistoryBatch ? activeHistoryBatch.disb_date : '');
+        const displayDisbDate = rawDisbDate ? formatDateDDMMYYYY(rawDisbDate) : '';
 
         const dataRows = [
             ["T.U.3 தேவாரம் தொடக்க வேளாண்மை கூட்டுறவு கடன் சங்கம், தேவாரம்."],
-            [`ஜாபிதா விபரம்`, ``, ``, ``, `மத்திய வங்கி RCL எண்: ${rclNo}  தேதி: ${formatDateDDMMYYYY(rclDate)}`, ``, ``, ``, ``, ``, ``, ``, `பட்டுவாடா தேதி : ${formatDateDDMMYYYY(disbDate)}`],
+            [`ஜாபிதா விபரம்`, ``, ``, ``, `மத்திய வங்கி RCL எண்: ${rclNo}  தேதி: ${formatDateDDMMYYYY(rclDate)}`, ``, ``, ``, ``, ``, ``, ``, `பட்டுவாடா தேதி : ${displayDisbDate}`],
             ["வ.எண்", "அ.எண்", "SB", "ERP", "பெயர்", "சர்வே எண்", "பரப்பு.செ", "பயிர்", "விதை பகுதி", "இரசாயன உரம் 50%", "தொழுஉரம் 50%", "பூச்சி மருந்து", "ரொக்கம்", "மொத்தம்", "கையொப்பம்"]
         ];
 
@@ -4053,8 +4182,8 @@
         const rclDate = safeSelect('disb-kcc-rcl-date')?.value || '';
         const resNo = safeSelect('disb-kcc-res-no')?.value.trim() || '';
         const resDate = safeSelect('disb-kcc-res-date')?.value || '';
-        const rawDisbDate = safeSelect('disb-history-date-input')?.value || '';
-        const displayDisbDate = rawDisbDate ? formatDateDDMMYYYY(rawDisbDate) : '____________________';
+        const rawDisbDate = safeSelect('disb-history-date-input')?.value || (typeof activeHistoryBatch !== 'undefined' && activeHistoryBatch ? activeHistoryBatch.disb_date : '');
+        const displayDisbDate = rawDisbDate ? formatDateDDMMYYYY(rawDisbDate) : '';
 
         // Open print window
         const w = window.open('', '_blank');
@@ -4468,8 +4597,8 @@
         const resNo = safeSelect('disb-kcc-res-no')?.value.trim() || '';
         const resDate = safeSelect('disb-kcc-res-date')?.value || '';
         const disbNo = safeSelect('disb-history-no-input')?.value.trim() || 'KCC 1';
-        const rawDisbDate = safeSelect('disb-history-date-input')?.value || safeSelect('disb-kcc-rcl-date')?.value || '';
-        const displayDisbDate = rawDisbDate ? formatDateDDMMYYYY(rawDisbDate) : '____________________';
+        const rawDisbDate = safeSelect('disb-history-date-input')?.value || (typeof activeHistoryBatch !== 'undefined' && activeHistoryBatch ? activeHistoryBatch.disb_date : '');
+        const displayDisbDate = rawDisbDate ? formatDateDDMMYYYY(rawDisbDate) : '';
 
         // Calculations
         let totalSeed = 0;
@@ -4665,7 +4794,7 @@
         const rclDate = safeSelect('disb-kcc-rcl-date')?.value || '';
         const resNo = safeSelect('disb-kcc-res-no')?.value.trim() || '';
         const resDate = safeSelect('disb-kcc-res-date')?.value || '';
-        const rawDisbDate = safeSelect('disb-history-date-input')?.value || safeSelect('disb-kcc-rcl-date')?.value || '';
+        const rawDisbDate = safeSelect('disb-history-date-input')?.value || (typeof activeHistoryBatch !== 'undefined' && activeHistoryBatch ? activeHistoryBatch.disb_date : '');
         const displayDisbDate = rawDisbDate ? formatDateDDMMYYYY(rawDisbDate) : '';
 
         let totalLoanAmount = 0;

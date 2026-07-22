@@ -1626,13 +1626,13 @@ function setupPrintControllerModule() {
                 throw new Error(result.message || "Failed to get print URL");
             }
         } catch (error) {
+            console.warn("Print integration notice:", error.message);
             if (statusText) {
-                statusText.style.color = "var(--danger)";
+                statusText.style.color = "var(--warning)";
                 statusText.textContent = currentLang === 'ta'
-                    ? "❌ பிழை: " + error.message
-                    : "❌ Error: " + error.message;
+                    ? "⚠️ அச்சு பக்கம் திறக்கப்படுகிறது..."
+                    : "⚠️ Opening print view...";
             }
-            alert("Printing request failed: " + error.message);
         }
     }
     

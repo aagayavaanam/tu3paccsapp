@@ -167,22 +167,63 @@
         const inputPrevDate = safeSelect('disb-kcc-prev-loan-date');
         if (inputPrevDate) inputPrevDate.value = todayStr;
 
-        // Set default Disbursement Number (auto-increment or saved)
+        // Auto-detect Next Disbursement Number STRICTLY based on Google Sheets ("All KCC Paduvada Members")
         const inputDisbNo = safeSelect('disb-kcc-disb-no');
-        if (inputDisbNo) {
-            let savedDisbNo = localStorage.getItem('pacs_kcc_disb_no');
-            if (!savedDisbNo) {
-                const history = JSON.parse(localStorage.getItem('pacs_disbursement_history') || '[]');
-                if (history.length > 0) {
-                    const maxNo = Math.max(...history.map(item => parseInt(item.disb_no) || 0));
-                    savedDisbNo = String(maxNo + 1);
-                } else {
-                    savedDisbNo = "1";
-                }
+        const btnRefreshDisbNo = safeSelect('btn-refresh-disb-no');
+
+        // Completely purge local sample history from local storage
+        try {
+            localStorage.removeItem('pacs_disbursement_history');
+            localStorage.removeItem('pacs_kcc_disb_no');
+        } catch(e) {}
+
+        function updateAutoDisbursementNumber() {
+            if (!inputDisbNo) return;
+            
+            // Default to 1
+            inputDisbNo.value = "1";
+
+            // Fetch live max disbursement number strictly from Google Sheets
+            const sheetUrl = getSheetUrl();
+            if (sheetUrl) {
+                fetch(sheetUrl + "?action=get_max_disbursement_no")
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data && data.max_disb_no !== undefined) {
+                            const sheetMax = parseInt(data.max_disb_no) || 0;
+                            const calculatedNext = String(sheetMax + 1);
+                            inputDisbNo.value = calculatedNext;
+                        }
+                    })
+                    .catch(err => console.warn("Live sheet max disb no fetch skipped", err));
             }
-            inputDisbNo.value = savedDisbNo;
+        }
+
+        if (inputDisbNo) {
+            updateAutoDisbursementNumber();
+
             inputDisbNo.addEventListener('input', () => {
                 localStorage.setItem('pacs_kcc_disb_no', inputDisbNo.value.trim());
+            });
+            inputDisbNo.addEventListener('change', () => {
+                const newNo = inputDisbNo.value.trim();
+                localStorage.setItem('pacs_kcc_disb_no', newNo);
+
+                // Auto-load draft members for the newly selected Disbursement No
+                const history = JSON.parse(localStorage.getItem('pacs_disbursement_history') || '[]');
+                const found = history.find(item => String(item.disb_no) === newNo);
+                if (found && found.members) {
+                    kccBatchMembers = JSON.parse(JSON.stringify(found.members));
+                } else {
+                    kccBatchMembers = [];
+                }
+                renderKccBatchTable();
+            });
+        }
+
+        if (btnRefreshDisbNo) {
+            btnRefreshDisbNo.addEventListener('click', () => {
+                updateAutoDisbursementNumber();
             });
         }
 
@@ -492,6 +533,26 @@
                     kccBatchMembers.push(updatedMember);
                 }
 
+                // Auto-save draft batch to local storage for instant lookup in KCC List
+                const disbNo = safeSelect('disb-kcc-disb-no')?.value.trim() || '1';
+                let history = JSON.parse(localStorage.getItem('pacs_disbursement_history') || '[]');
+                const existingIndex = history.findIndex(item => String(item.disb_no) === disbNo);
+                const batchRecord = {
+                    disb_no: disbNo,
+                    disb_date: "",
+                    rcl_no: safeSelect('disb-kcc-rcl-no')?.value.trim() || '',
+                    rcl_date: safeSelect('disb-kcc-rcl-date')?.value || '',
+                    res_no: safeSelect('disb-kcc-res-no')?.value.trim() || '',
+                    res_date: safeSelect('disb-kcc-res-date')?.value || '',
+                    members: JSON.parse(JSON.stringify(kccBatchMembers))
+                };
+                if (existingIndex >= 0) {
+                    history[existingIndex] = batchRecord;
+                } else {
+                    history.push(batchRecord);
+                }
+                localStorage.setItem('pacs_disbursement_history', JSON.stringify(history));
+
                 // Update UI
                 renderKccBatchTable();
                 
@@ -527,6 +588,68 @@
                 safeSelect('disb-kcc-disability').value = "0";
                 safeSelect('disb-kcc-loan-status').selectedIndex = 0;
                 safeSelect('disb-kcc-collateral-type').selectedIndex = 0;
+            });
+        }
+
+        // 2.5 Show Batch Members by Disbursement No in KCC List
+        const btnListShow = safeSelect('btn-disb-kcc-list-show');
+        const inputListNo = safeSelect('disb-kcc-list-no-input');
+        if (btnListShow) {
+            btnListShow.addEventListener('click', () => {
+                const searchNo = inputListNo ? inputListNo.value.trim() : '';
+                if (!searchNo) {
+                    alert("பட்டுவாடா எண்ணை உள்ளிடவும்!");
+                    return;
+                }
+
+                // Sync main disb_no input
+                const inputDisbNo = safeSelect('disb-kcc-disb-no');
+                if (inputDisbNo) inputDisbNo.value = searchNo;
+
+                // Search local history first
+                const history = JSON.parse(localStorage.getItem('pacs_disbursement_history') || '[]');
+                const found = history.find(item => String(item.disb_no) === searchNo);
+
+                if (found && found.members) {
+                    kccBatchMembers = JSON.parse(JSON.stringify(found.members));
+                    renderKccBatchTable();
+                    const statusDiv = safeSelect('disb-kcc-status');
+                    if (statusDiv) {
+                        statusDiv.style.color = "var(--success)";
+                        statusDiv.textContent = `✅ பட்டுவாடா எண் ${searchNo}-இல் ${found.members.length} உறுப்பினர்கள் பெறப்பட்டனர்.`;
+                    }
+                } else {
+                    // Try fetching from Google Sheets if configured
+                    const sheetUrl = getSheetUrl();
+                    if (sheetUrl) {
+                        const statusDiv = safeSelect('disb-kcc-status');
+                        if (statusDiv) {
+                            statusDiv.style.color = "var(--primary)";
+                            statusDiv.textContent = `⏳ பட்டுவாடா எண் ${searchNo} 'All KCC Paduvada Members' சீட்டிலிருந்து தேடப்படுகிறது...`;
+                        }
+                        fetch(sheetUrl + "?action=query_disbursement&disb_no=" + encodeURIComponent(searchNo))
+                            .then(res => res.json())
+                            .then(resData => {
+                                if (resData && resData.members && resData.members.length > 0) {
+                                    kccBatchMembers = JSON.parse(JSON.stringify(resData.members));
+                                    renderKccBatchTable();
+                                    if (statusDiv) {
+                                        statusDiv.style.color = "var(--success)";
+                                        statusDiv.textContent = `✅ பட்டுவாடா எண் ${searchNo}-இல் ${resData.members.length} உறுப்பினர்கள் பெறப்பட்டனர்.`;
+                                    }
+                                } else {
+                                    alert(`பட்டுவாடா எண் (${searchNo}) விபரங்கள் எதுவும் கிடைக்கவில்லை!`);
+                                    if (statusDiv) statusDiv.textContent = "";
+                                }
+                            })
+                            .catch(err => {
+                                alert(`பட்டுவாடா எண் (${searchNo}) விபரங்கள் எதுவும் கிடைக்கவில்லை!`);
+                                if (statusDiv) statusDiv.textContent = "";
+                            });
+                    } else {
+                        alert(`பட்டுவாடா எண் (${searchNo}) விபரங்கள் எதுவும் கிடைக்கவில்லை!`);
+                    }
+                }
             });
         }
 

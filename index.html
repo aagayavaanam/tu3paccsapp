@@ -1186,7 +1186,10 @@
                             <div class="api-connect-form" style="display: flex; gap: 15px; flex-wrap: wrap;">
                                 <div class="form-group" style="flex: 1; min-width: 150px;">
                                     <label class="form-label font-bold text-primary">பட்டுவாடா எண் (Disbursement No) *</label>
-                                    <input type="text" id="disb-kcc-disb-no" value="1" class="search-input full-width">
+                                    <div style="display: flex; gap: 5px;">
+                                        <input type="text" id="disb-kcc-disb-no" value="1" class="search-input full-width">
+                                        <button type="button" id="btn-refresh-disb-no" class="btn btn-secondary" title="கூகுள் சீட்டிலிருந்து பட்டுவாடா எண்ணைப் புதுப்பி" style="padding: 0 10px; font-size: 14px;">🔄</button>
+                                    </div>
                                 </div>
                                 <div class="form-group" style="flex: 1; min-width: 150px;">
                                     <label class="form-label font-bold">RCL எண் *</label>
@@ -1446,6 +1449,24 @@
                         <p class="page-subtitle">சேர்க்கப்பட்ட கடன்தாரர்களின் பட்டியல், திருத்தம், நீக்கம் மற்றும் இறுதி சமர்ப்பிப்பு</p>
                     </div>
                 </header>
+
+                <!-- Batch Search / Filter Card for KCC List -->
+                <div class="card margin-bottom-md">
+                    <div class="card-header" style="background-color: var(--primary-light);">
+                        <h3 class="text-primary font-bold">🔍 பட்டுவாடா எண் விவரம் தேடல்</h3>
+                    </div>
+                    <div class="card-body">
+                        <div style="display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;">
+                            <div class="form-group" style="flex: 1; min-width: 200px;">
+                                <label class="form-label font-bold text-primary">பட்டுவாடா எண் *</label>
+                                <input type="text" id="disb-kcc-list-no-input" placeholder="உதாரணம்: 1" class="search-input full-width">
+                            </div>
+                            <button type="button" class="btn btn-primary" id="btn-disb-kcc-list-show" style="height: 42px; padding: 0 25px; font-weight: bold;">
+                                🔍 விவரம் காட்டு (Show Details)
+                            </button>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Batch Table Card -->
                 <div class="card margin-bottom-md">
